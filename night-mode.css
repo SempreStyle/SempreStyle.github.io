@@ -1,0 +1,239 @@
+/* Night Mode CSS Variables */
+:root {
+    /* Light mode (default) variables */
+    --bg-color: #f8f9fa;
+    --text-color: #2c3e50;
+    --heading-color: #1a365d;
+    --nav-bg: #1a365d;
+    --nav-text: #FFFFFF;
+    --card-bg: #ffffff;
+    --input-bg: #f9f9f9;
+    --input-border: rgba(26, 54, 93, 0.2);
+    --button-bg: #3182ce;
+    --button-hover: #2b6cb0;
+    --button-text: #FFFFFF;
+    --border-color: rgba(44, 62, 80, 0.1);
+    --shadow-color: rgba(0, 0, 0, 0.05);
+    --completed-bg: #e6ffed;
+    --completed-border: #2f855a;
+    --fieldset-bg: #f9f9f9;
+    --highlight-color: #fefcbf;
+}
+
+/* Dark mode variables */
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --heading-color: #90cdf4;
+    --nav-bg: #1a202c;
+    --nav-text: #f0f0f0;
+    --card-bg: #1e1e1e;
+    --input-bg: #2d3748;
+    --input-border: rgba(144, 205, 244, 0.3);
+    --button-bg: #2b6cb0;
+    --button-hover: #3182ce;
+    --button-text: #f0f0f0;
+    --border-color: rgba(226, 232, 240, 0.1);
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --completed-bg: #1c4532;
+    --completed-border: #38a169;
+    --fieldset-bg: #2d3748;
+    --highlight-color: #744210;
+    --label-color: #c5d9f8;
+    --vivienda-nombre-color: #90cdf4;
+    --vivienda-detalle-color: #cbd5e0;
+    --registro-text-color: #e2e8f0;
+    --trabajadoras-heading-color: #90cdf4;
+    --trabajadoras-text-color: #e2e8f0;
+    --trabajadoras-strong-color: #63b3ed;
+}
+
+/* Night mode toggle button */
+.theme-toggle {
+    background: transparent;
+    border: none;
+    color: var(--nav-text);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.theme-toggle i {
+    font-size: 1.2rem;
+}
+
+/* Apply theme variables to elements */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Form labels in dark mode */
+[data-theme="dark"] label {
+    color: var(--label-color);
+}
+
+.nav-bar {
+    background: var(--nav-bg);
+}
+
+.nav-link {
+    color: var(--nav-text);
+}
+
+h1, h2, h3, legend {
+    color: var(--heading-color);
+}
+
+section > * {
+    background: var(--card-bg);
+    box-shadow: 0 5px 20px var(--shadow-color);
+}
+
+form {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+input[type="date"],
+input[type="time"],
+input[type="number"],
+select {
+    background-color: var(--input-bg);
+    border: 2px solid var(--input-border);
+    color: var(--text-color);
+}
+
+fieldset {
+    border: 2px solid var(--input-border);
+    background: var(--fieldset-bg);
+}
+
+button {
+    background: var(--button-bg);
+    color: var(--button-text);
+}
+
+button:hover {
+    background: var(--button-hover);
+}
+
+#historialRegistros .registro {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+#historialRegistros .registro-completado {
+    background-color: var(--completed-bg);
+    border-left: 4px solid var(--completed-border);
+}
+
+.propiedad-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+.propiedad-btn:hover {
+    background-color: var(--input-bg);
+}
+
+/* Vivienda nombre and detalle in dark mode */
+[data-theme="dark"] .vivienda-nombre {
+    color: var(--vivienda-nombre-color);
+}
+
+[data-theme="dark"] .vivienda-detalle {
+    color: var(--vivienda-detalle-color);
+}
+
+.propiedad-btn.propiedad-completada {
+    background-color: var(--completed-bg);
+    border-left: 5px solid var(--completed-border);
+}
+
+.trabajadoras-historial {
+    background-color: var(--fieldset-bg);
+}
+
+@keyframes highlight {
+    0% { background-color: var(--highlight-color); }
+    100% { background-color: inherit; }
+}
+
+/* Registro text in dark mode */
+[data-theme="dark"] #historialRegistros .registro p {
+    color: var(--registro-text-color);
+}
+
+/* Trabajadoras section in dark mode */
+[data-theme="dark"] .trabajadoras-historial h4 {
+    color: var(--trabajadoras-heading-color);
+}
+
+[data-theme="dark"] .trabajadoras-historial li {
+    color: var(--trabajadoras-text-color);
+    border-bottom: 1px dashed var(--border-color);
+}
+
+[data-theme="dark"] .trabajadoras-historial li strong {
+    color: var(--trabajadoras-strong-color);
+}
+
+/* Moon and sun icons using CSS */
+.moon-icon, .sun-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    position: relative;
+}
+
+.moon-icon {
+    background: transparent;
+    border-radius: 50%;
+    box-shadow: inset -4px -2px 0 0 #f0f0f0;
+    transform: rotate(-30deg);
+}
+
+.sun-icon {
+    background: #f0f0f0;
+    border-radius: 50%;
+}
+
+.sun-icon::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 6px;
+    background: #f0f0f0;
+    box-shadow: 0 20px 0 0 #f0f0f0, 6px 6px 0 0 #f0f0f0, -6px 6px 0 0 #f0f0f0, 6px -6px 0 0 #f0f0f0, -6px -6px 0 0 #f0f0f0, 14px 0 0 0 #f0f0f0, -14px 0 0 0 #f0f0f0, 0 14px 0 0 #f0f0f0, 0 -14px 0 0 #f0f0f0;
+}
+
+/* Hide the appropriate icon based on theme */
+[data-theme="light"] .moon-icon {
+    display: inline-block;
+}
+
+[data-theme="light"] .sun-icon {
+    display: none;
+}
+
+[data-theme="dark"] .moon-icon {
+    display: none;
+}
+
+[data-theme="dark"] .sun-icon {
+    display: inline-block;
+}

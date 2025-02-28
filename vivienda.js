@@ -8,7 +8,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const viviendasPasadoManana = document.getElementById('viviendasPasadoManana');
     const menuToggle = document.querySelector('.menu-toggle');
     const navLinks = document.querySelector('.nav-links');
+    const themeToggle = document.getElementById('theme-toggle');
     let registros = JSON.parse(localStorage.getItem('registrosViviendas')) || [];
+    
+    // Inicializar el tema según la preferencia guardada
+    initTheme();
     
     // Registrar el Service Worker para notificaciones
     if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -29,6 +33,25 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Función para inicializar el tema
+    function initTheme() {
+        // Verificar si hay un tema guardado en localStorage
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        // Configurar el botón de cambio de tema
+        themeToggle.addEventListener('click', toggleTheme);
+    }
+    
+    // Función para cambiar entre temas claro y oscuro
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+    }
+    
     // Función para registrar el Service Worker
     async function registerServiceWorker() {
         try {
