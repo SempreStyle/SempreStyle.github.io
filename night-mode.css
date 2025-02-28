@@ -45,7 +45,7 @@
     --registro-text-color: #f8f8f2;
     --trabajadoras-heading-color: #8be9fd; /* Changed from #ff79c6 (pink) to #8be9fd (light blue) */
     --trabajadoras-text-color: #f8f8f2;
-    --trabajadoras-strong-color: #50fa7b; /* Changed from #ffb86c (orange) to #50fa7b (green) for better visibility of apartment numbers */
+    --trabajadoras-strong-color: #f1fa8c; /* Changed from #50fa7b (green) to #f1fa8c (light yellow) for better visibility of apartment numbers */
 }
 
 /* Night mode toggle button */
@@ -187,6 +187,11 @@ button:hover {
 
 [data-theme="dark"] .trabajadoras-historial li strong {
     color: var(--trabajadoras-strong-color);
+}
+
+/* Improve visibility of apartment count in dark mode */
+[data-theme="dark"] .contador-apartamentos {
+    color: #b3b3b3 !important; /* Lighter gray for better visibility in dark mode */
 }
 
 /* Moon and sun icons using CSS */
