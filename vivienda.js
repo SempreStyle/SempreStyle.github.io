@@ -1955,7 +1955,7 @@ document.addEventListener('DOMContentLoaded', function () {
             checkbox.type = 'checkbox';
             checkbox.name = 'trabajadora';
             checkbox.value = trabajadora;
-            checkbox.id = `trabajadora-${trabajadora}-${Date.now()}`; // ID único
+            checkbox.id = `trabajadora-${trabajadora}-${form.id.split('-')[1]}`; // ID único
             checkbox.checked = !!trabajadoraActual;
             checkbox.style.marginRight = '8px';
             
@@ -2027,8 +2027,29 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
+        // Añadir un indicador de estado para mostrar feedback visual
+        const statusIndicator = document.createElement('div');
+        statusIndicator.style.display = 'none';
+        statusIndicator.style.padding = '8px';
+        statusIndicator.style.marginTop = '10px';
+        statusIndicator.style.borderRadius = '4px';
+        statusIndicator.style.textAlign = 'center';
+        statusIndicator.style.fontWeight = 'bold';
+        formContainer.appendChild(statusIndicator);
+
         // Evento para guardar los cambios
         guardarBtn.addEventListener('click', function() {
+            // Deshabilitar el botón para evitar múltiples clics
+            guardarBtn.disabled = true;
+            guardarBtn.textContent = 'Guardando...';
+            guardarBtn.style.backgroundColor = '#999';
+            
+            // Mostrar indicador de estado
+            statusIndicator.style.display = 'block';
+            statusIndicator.style.backgroundColor = '#f8d7da';
+            statusIndicator.style.color = '#721c24';
+            statusIndicator.textContent = 'Guardando cambios...';
+            
             const trabajadorasSeleccionadas = [];
             let horasTotales = 0;
             
@@ -2047,31 +2068,91 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
             
+            // Guardar una copia del registro original por si necesitamos revertir
+            const registroOriginal = JSON.parse(JSON.stringify(registro));
+            
             // Actualizar el registro con las nuevas trabajadoras
             registro.trabajadoras = trabajadorasSeleccionadas;
             
             // Actualizar las horas totales de limpieza
             registro.horasLimpiadora = horasTotales;
             
-            // Actualizar el registro en localStorage
-            actualizarRegistro(registro);
-            
-            // Actualizar la vista del registro específico
-            actualizarVistaRegistro(div, registro);
-            
-            // Actualizar los botones de propiedad si la función existe
-            if (typeof actualizarBotonesPropiedad === 'function') {
-                actualizarBotonesPropiedad(registro);
+            try {
+                // Actualizar el registro en localStorage con manejo de errores
+                const registrosAnteriores = JSON.parse(localStorage.getItem('registrosViviendas')) || [];
+                
+                // Encontrar el índice del registro actual en el array
+                const indiceRegistro = registrosAnteriores.findIndex(r => 
+                    r.vivienda === registro.vivienda && 
+                    r.fechaEntrada === registro.fechaEntrada && 
+                    r.fechaSalida === registro.fechaSalida
+                );
+                
+                if (indiceRegistro !== -1) {
+                    // Actualizar el registro en el array
+                    registrosAnteriores[indiceRegistro] = registro;
+                    
+                    // Guardar el array actualizado en localStorage
+                    localStorage.setItem('registrosViviendas', JSON.stringify(registrosAnteriores));
+                    
+                    // Verificar que se guardó correctamente
+                    const verificacion = JSON.parse(localStorage.getItem('registrosViviendas')) || [];
+                    const registroVerificado = verificacion[indiceRegistro];
+                    
+                    if (registroVerificado && 
+                        registroVerificado.trabajadoras && 
+                        JSON.stringify(registroVerificado.trabajadoras) === JSON.stringify(trabajadorasSeleccionadas)) {
+                        
+                        // Actualizar la variable global de registros
+                        registros = verificacion;
+                        
+                        // Actualizar la vista del registro específico
+                        actualizarVistaRegistro(div, registro);
+                        
+                        // Actualizar los botones de propiedad si la función existe
+                        if (typeof actualizarBotonesPropiedad === 'function') {
+                            actualizarBotonesPropiedad(registro);
+                        }
+                        
+                        // Mostrar mensaje de éxito
+                        statusIndicator.style.backgroundColor = '#d4edda';
+                        statusIndicator.style.color = '#155724';
+                        statusIndicator.textContent = 'Cambios guardados correctamente';
+                        
+                        // Eliminar el formulario después de un breve retraso para mostrar el mensaje
+                        setTimeout(() => {
+                            if (div.contains(formContainer)) {
+                                div.removeChild(formContainer);
+                            }
+                            
+                            // Restaurar la posición de scroll
+                            window.scrollTo({
+                                top: scrollPosition,
+                                behavior: 'auto'
+                            });
+                        }, 1500);
+                    } else {
+                        throw new Error('No se pudo verificar la actualización');
+                    }
+                } else {
+                    throw new Error('No se encontró el registro para actualizar');
+                }
+            } catch (error) {
+                console.error('Error al guardar los cambios:', error);
+                
+                // Revertir cambios en caso de error
+                Object.assign(registro, registroOriginal);
+                
+                // Mostrar mensaje de error
+                statusIndicator.style.backgroundColor = '#f8d7da';
+                statusIndicator.style.color = '#721c24';
+                statusIndicator.textContent = 'Error al guardar. Inténtalo de nuevo.';
+                
+                // Habilitar el botón de guardar nuevamente
+                guardarBtn.disabled = false;
+                guardarBtn.textContent = 'Guardar';
+                guardarBtn.style.backgroundColor = '#EE1C25';
             }
-            
-            // Eliminar el formulario
-            div.removeChild(formContainer);
-            
-            // Restaurar la posición de scroll
-            window.scrollTo({
-                top: scrollPosition,
-                behavior: 'auto'
-            });
         });
     }
 
