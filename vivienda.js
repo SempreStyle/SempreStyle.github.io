@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('#historialRegistros .grupo').forEach(grupo => {
             const titulo = grupo.querySelector('.fecha-titulo');
             const contenido = grupo.querySelector('.contenido');
-            const fecha = titulo.textContent.replace(' ▼', '').replace(' ▲', '');
+            const fecha = titulo.textContent.replace(' ▼', '').replace(' ▲', '').replace(/\s*\(\d+\s*apartamentos?\)\s*/, '');
             
             if (contenido.style.display === 'block') {
                 fechasExpandidas.add(fecha);
@@ -240,9 +240,23 @@ document.addEventListener('DOMContentLoaded', function () {
             grupo.classList.add('grupo');
 
             const titulo = document.createElement('h3');
-            titulo.textContent = fecha;
             titulo.classList.add('fecha-titulo');
             titulo.style.cursor = 'pointer';
+            
+            // Crear el texto de la fecha
+            const fechaTexto = document.createTextNode(fecha);
+            titulo.appendChild(fechaTexto);
+            
+            // Añadir el contador de apartamentos como una anotación
+            const contadorApartamentos = document.createElement('span');
+            contadorApartamentos.classList.add('contador-apartamentos');
+            contadorApartamentos.style.fontSize = '0.7em'; // Mitad del tamaño de la fecha
+            contadorApartamentos.style.color = '#666'; // Color más suave
+            contadorApartamentos.style.fontWeight = 'normal';
+            contadorApartamentos.style.marginLeft = '10px';
+            const numApartamentos = registrosPorFecha.length;
+            contadorApartamentos.textContent = `(${numApartamentos} ${numApartamentos === 1 ? 'apartamento' : 'apartamentos'})`;
+            titulo.appendChild(contadorApartamentos);
             
             // Añadir indicador visual de expansión
             const indicador = document.createElement('span');
