@@ -680,6 +680,12 @@ document.addEventListener('DOMContentLoaded', function () {
         // Evento para cerrar el formulario
         cancelarBtn.addEventListener('click', function() {
             div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll al cancelar
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
         });
 
         // Evento para guardar los cambios
@@ -703,6 +709,12 @@ document.addEventListener('DOMContentLoaded', function () {
             
             // Eliminar el formulario
             div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
         });
     }
 
@@ -886,6 +898,12 @@ document.addEventListener('DOMContentLoaded', function () {
         // Evento para cerrar el formulario
         cancelarBtn.addEventListener('click', function() {
             div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll al cancelar
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
         });
 
         // Evento para guardar los cambios
@@ -904,10 +922,19 @@ document.addEventListener('DOMContentLoaded', function () {
             
             // Eliminar el formulario
             div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
         });
     }
     
     function editarHorasTrabajadoras(registro, div) {
+        // Guardar la posición actual de scroll
+        const scrollPosition = window.scrollY;
+        
         // Verificar si ya existe un formulario de edición en este div
         const existingForm = div.querySelector('.form-editar-trabajadoras');
         if (existingForm) {
@@ -1027,6 +1054,12 @@ document.addEventListener('DOMContentLoaded', function () {
         // Evento para cerrar el formulario
         cancelarBtn.addEventListener('click', function() {
             div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll al cancelar
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
         });
 
         // Evento para guardar los cambios
@@ -1068,6 +1101,12 @@ document.addEventListener('DOMContentLoaded', function () {
             
             // Eliminar el formulario
             div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
         });
     }
 
