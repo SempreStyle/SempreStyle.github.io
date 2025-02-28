@@ -554,7 +554,7 @@ button:active {
 }
 
 /* Estilos para botones de acción en registros */
-.borrarBtn, .editarTrabajadorasBtn, .editarExtrasBtn, .anotacionesBtn {
+.borrarBtn, .editarTrabajadorasBtn, .editarExtrasBtn, .anotacionesBtn, .editarEntradaBtn, .editarSalidaBtn {
     padding: 8px 12px;
     margin-right: 8px;
     margin-top: 10px;
@@ -616,7 +616,7 @@ button:active {
         padding: 12px 5px !important;
         font-size: 14px !important;
     }
-}
+    
     .nav-container {
         flex-direction: column;
         gap: 10px;

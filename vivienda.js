@@ -324,6 +324,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     <p><strong>Extras:</strong> ${registro.extras.join(", ")}</p>
                     ${registro.anotaciones ? `<p><strong>Anotaciones:</strong> ${registro.anotaciones}</p>` : ''}
                     <button class="borrarBtn">Borrar</button>
+                    <button class="editarEntradaBtn">Editar Entrada</button>
+                    <button class="editarSalidaBtn">Editar Salida</button>
                     <button class="editarTrabajadorasBtn">Editar Horas Trabajadoras</button>
                     <button class="editarExtrasBtn">Editar Extras</button>
                     <button class="anotacionesBtn">Anotaciones</button>
@@ -345,7 +347,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 });
 
-
+                const editarEntradaBtn = entrada.querySelector('.editarEntradaBtn');
+                editarEntradaBtn.addEventListener('click', function () {
+                    editarEntrada(registro, entrada);
+                });
+                
+                const editarSalidaBtn = entrada.querySelector('.editarSalidaBtn');
+                editarSalidaBtn.addEventListener('click', function () {
+                    editarSalida(registro, entrada);
+                });
 
                 const editarExtrasBtn = entrada.querySelector('.editarExtrasBtn');
                 editarExtrasBtn.addEventListener('click', function () {
@@ -449,7 +459,321 @@ document.addEventListener('DOMContentLoaded', function () {
             localStorage.setItem('registrosViviendas', JSON.stringify(registros));
             agregarRegistroAlHistorial(nuevoRegistro);
             registroForm.reset();
-            actualizarUI();
+            /**
+     * Muestra un formulario para editar la fecha y hora de entrada
+     * @param {Object} registro - El registro de la vivienda
+     * @param {HTMLElement} div - El elemento HTML del registro
+     */
+    function editarEntrada(registro, div) {
+        // Guardar la posición actual de scroll
+        const scrollPosition = window.scrollY;
+        
+        // Verificar si ya existe un formulario de edición en este div
+        const existingForm = div.querySelector('.form-editar-entrada');
+        if (existingForm) {
+            // Si ya existe un formulario, lo eliminamos (toggle)
+            div.removeChild(existingForm);
+            return;
+        }
+        
+        // Crear el contenedor del formulario inline
+        const formContainer = document.createElement('div');
+        formContainer.classList.add('form-editar-entrada');
+        formContainer.style.backgroundColor = '#f9f9f9';
+        formContainer.style.padding = '15px';
+        formContainer.style.borderRadius = '8px';
+        formContainer.style.marginTop = '15px';
+        formContainer.style.marginBottom = '15px';
+        formContainer.style.border = '1px solid #ddd';
+
+        // Título del formulario
+        const titulo = document.createElement('h4');
+        titulo.textContent = 'Editar Fecha y Hora de Entrada';
+        titulo.style.marginTop = '0';
+        titulo.style.marginBottom = '10px';
+        titulo.style.color = '#2c3e50';
+        formContainer.appendChild(titulo);
+
+        // Crear formulario para la fecha y hora de entrada
+        const form = document.createElement('form');
+        form.id = 'formEntrada-' + Date.now(); // ID único para evitar conflictos
+        
+        // Campo para la fecha de entrada
+        const fechaDiv = document.createElement('div');
+        fechaDiv.style.marginBottom = '15px';
+        
+        const fechaLabel = document.createElement('label');
+        fechaLabel.textContent = 'Fecha de Entrada:';
+        fechaLabel.style.display = 'block';
+        fechaLabel.style.marginBottom = '5px';
+        
+        const fechaInput = document.createElement('input');
+        fechaInput.type = 'date';
+        fechaInput.name = 'fechaEntrada';
+        fechaInput.value = registro.fechaEntrada || '';
+        fechaInput.style.width = '100%';
+        fechaInput.style.padding = '8px';
+        fechaInput.style.border = '1px solid #ddd';
+        fechaInput.style.borderRadius = '4px';
+        
+        fechaDiv.appendChild(fechaLabel);
+        fechaDiv.appendChild(fechaInput);
+        form.appendChild(fechaDiv);
+        
+        // Campo para la hora de entrada
+        const horaDiv = document.createElement('div');
+        horaDiv.style.marginBottom = '15px';
+        
+        const horaLabel = document.createElement('label');
+        horaLabel.textContent = 'Hora de Entrada:';
+        horaLabel.style.display = 'block';
+        horaLabel.style.marginBottom = '5px';
+        
+        const horaInput = document.createElement('input');
+        horaInput.type = 'time';
+        horaInput.name = 'horaEntrada';
+        horaInput.value = registro.horaEntrada || '';
+        horaInput.style.width = '100%';
+        horaInput.style.padding = '8px';
+        horaInput.style.border = '1px solid #ddd';
+        horaInput.style.borderRadius = '4px';
+        
+        horaDiv.appendChild(horaLabel);
+        horaDiv.appendChild(horaInput);
+        form.appendChild(horaDiv);
+        
+        // Botones de acción
+        const botonesDiv = document.createElement('div');
+        botonesDiv.style.display = 'flex';
+        botonesDiv.style.justifyContent = 'flex-end';
+        botonesDiv.style.gap = '10px';
+        botonesDiv.style.marginTop = '15px';
+
+        const cancelarBtn = document.createElement('button');
+        cancelarBtn.textContent = 'Cancelar';
+        cancelarBtn.type = 'button';
+        cancelarBtn.style.padding = '8px 15px';
+        cancelarBtn.style.backgroundColor = '#6c757d';
+        cancelarBtn.style.color = 'white';
+        cancelarBtn.style.border = 'none';
+        cancelarBtn.style.borderRadius = '5px';
+        cancelarBtn.style.cursor = 'pointer';
+
+        const guardarBtn = document.createElement('button');
+        guardarBtn.textContent = 'Guardar';
+        guardarBtn.type = 'button';
+        guardarBtn.style.padding = '8px 15px';
+        guardarBtn.style.backgroundColor = '#EE1C25';
+        guardarBtn.style.color = 'white';
+        guardarBtn.style.border = 'none';
+        guardarBtn.style.borderRadius = '5px';
+        guardarBtn.style.cursor = 'pointer';
+
+        botonesDiv.appendChild(cancelarBtn);
+        botonesDiv.appendChild(guardarBtn);
+
+        form.appendChild(botonesDiv);
+        formContainer.appendChild(form);
+        
+        // Insertar el formulario después del último botón en el div del registro
+        div.appendChild(formContainer);
+
+        // Evento para cerrar el formulario
+        cancelarBtn.addEventListener('click', function() {
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll al cancelar
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+
+        // Evento para guardar los cambios
+        guardarBtn.addEventListener('click', function() {
+            // Obtener los valores de fecha y hora
+            const fechaEntrada = fechaInput.value;
+            const horaEntrada = horaInput.value;
+            
+            // Actualizar el registro con los nuevos valores
+            registro.fechaEntrada = fechaEntrada;
+            registro.horaEntrada = horaEntrada;
+            
+            // Actualizar el registro en localStorage
+            actualizarRegistro(registro);
+            
+            // Actualizar la vista del registro específico
+            actualizarVistaRegistro(div, registro);
+            
+            // Eliminar el formulario
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+    }
+    
+    /**
+     * Muestra un formulario para editar la fecha y hora de salida
+     * @param {Object} registro - El registro de la vivienda
+     * @param {HTMLElement} div - El elemento HTML del registro
+     */
+    function editarSalida(registro, div) {
+        // Guardar la posición actual de scroll
+        const scrollPosition = window.scrollY;
+        
+        // Verificar si ya existe un formulario de edición en este div
+        const existingForm = div.querySelector('.form-editar-salida');
+        if (existingForm) {
+            // Si ya existe un formulario, lo eliminamos (toggle)
+            div.removeChild(existingForm);
+            return;
+        }
+        
+        // Crear el contenedor del formulario inline
+        const formContainer = document.createElement('div');
+        formContainer.classList.add('form-editar-salida');
+        formContainer.style.backgroundColor = '#f9f9f9';
+        formContainer.style.padding = '15px';
+        formContainer.style.borderRadius = '8px';
+        formContainer.style.marginTop = '15px';
+        formContainer.style.marginBottom = '15px';
+        formContainer.style.border = '1px solid #ddd';
+
+        // Título del formulario
+        const titulo = document.createElement('h4');
+        titulo.textContent = 'Editar Fecha y Hora de Salida';
+        titulo.style.marginTop = '0';
+        titulo.style.marginBottom = '10px';
+        titulo.style.color = '#2c3e50';
+        formContainer.appendChild(titulo);
+
+        // Crear formulario para la fecha y hora de salida
+        const form = document.createElement('form');
+        form.id = 'formSalida-' + Date.now(); // ID único para evitar conflictos
+        
+        // Campo para la fecha de salida
+        const fechaDiv = document.createElement('div');
+        fechaDiv.style.marginBottom = '15px';
+        
+        const fechaLabel = document.createElement('label');
+        fechaLabel.textContent = 'Fecha de Salida:';
+        fechaLabel.style.display = 'block';
+        fechaLabel.style.marginBottom = '5px';
+        
+        const fechaInput = document.createElement('input');
+        fechaInput.type = 'date';
+        fechaInput.name = 'fechaSalida';
+        fechaInput.value = registro.fechaSalida || '';
+        fechaInput.style.width = '100%';
+        fechaInput.style.padding = '8px';
+        fechaInput.style.border = '1px solid #ddd';
+        fechaInput.style.borderRadius = '4px';
+        
+        fechaDiv.appendChild(fechaLabel);
+        fechaDiv.appendChild(fechaInput);
+        form.appendChild(fechaDiv);
+        
+        // Campo para la hora de salida
+        const horaDiv = document.createElement('div');
+        horaDiv.style.marginBottom = '15px';
+        
+        const horaLabel = document.createElement('label');
+        horaLabel.textContent = 'Hora de Salida:';
+        horaLabel.style.display = 'block';
+        horaLabel.style.marginBottom = '5px';
+        
+        const horaInput = document.createElement('input');
+        horaInput.type = 'time';
+        horaInput.name = 'horaSalida';
+        horaInput.value = registro.horaSalida || '';
+        horaInput.style.width = '100%';
+        horaInput.style.padding = '8px';
+        horaInput.style.border = '1px solid #ddd';
+        horaInput.style.borderRadius = '4px';
+        
+        horaDiv.appendChild(horaLabel);
+        horaDiv.appendChild(horaInput);
+        form.appendChild(horaDiv);
+        
+        // Botones de acción
+        const botonesDiv = document.createElement('div');
+        botonesDiv.style.display = 'flex';
+        botonesDiv.style.justifyContent = 'flex-end';
+        botonesDiv.style.gap = '10px';
+        botonesDiv.style.marginTop = '15px';
+
+        const cancelarBtn = document.createElement('button');
+        cancelarBtn.textContent = 'Cancelar';
+        cancelarBtn.type = 'button';
+        cancelarBtn.style.padding = '8px 15px';
+        cancelarBtn.style.backgroundColor = '#6c757d';
+        cancelarBtn.style.color = 'white';
+        cancelarBtn.style.border = 'none';
+        cancelarBtn.style.borderRadius = '5px';
+        cancelarBtn.style.cursor = 'pointer';
+
+        const guardarBtn = document.createElement('button');
+        guardarBtn.textContent = 'Guardar';
+        guardarBtn.type = 'button';
+        guardarBtn.style.padding = '8px 15px';
+        guardarBtn.style.backgroundColor = '#EE1C25';
+        guardarBtn.style.color = 'white';
+        guardarBtn.style.border = 'none';
+        guardarBtn.style.borderRadius = '5px';
+        guardarBtn.style.cursor = 'pointer';
+
+        botonesDiv.appendChild(cancelarBtn);
+        botonesDiv.appendChild(guardarBtn);
+
+        form.appendChild(botonesDiv);
+        formContainer.appendChild(form);
+        
+        // Insertar el formulario después del último botón en el div del registro
+        div.appendChild(formContainer);
+
+        // Evento para cerrar el formulario
+        cancelarBtn.addEventListener('click', function() {
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll al cancelar
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+
+        // Evento para guardar los cambios
+        guardarBtn.addEventListener('click', function() {
+            // Obtener los valores de fecha y hora
+            const fechaSalida = fechaInput.value;
+            const horaSalida = horaInput.value;
+            
+            // Actualizar el registro con los nuevos valores
+            registro.fechaSalida = fechaSalida;
+            registro.horaSalida = horaSalida;
+            
+            // Actualizar el registro en localStorage
+            actualizarRegistro(registro);
+            
+            // Actualizar la vista del registro específico
+            actualizarVistaRegistro(div, registro);
+            
+            // Eliminar el formulario
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+    }
+    
+    actualizarUI();
         } else {
             alert('Por favor, complete el nombre del piso y al menos una entrada o salida.');
         }
@@ -490,6 +814,8 @@ document.addEventListener('DOMContentLoaded', function () {
             <p><strong>Extras:</strong> ${registro.extras.join(", ")}</p>
             ${registro.anotaciones ? `<p><strong>Anotaciones:</strong> ${registro.anotaciones}</p>` : ''}
             <button class="borrarBtn">Borrar</button>
+            <button class="editarEntradaBtn">Editar Entrada</button>
+            <button class="editarSalidaBtn">Editar Salida</button>
             <button class="editarTrabajadorasBtn">Editar Horas Trabajadoras</button>
             <button class="editarExtrasBtn">Editar Extras</button>
             <button class="anotacionesBtn">Anotaciones</button>
@@ -512,7 +838,15 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-
+        const editarEntradaBtn = div.querySelector('.editarEntradaBtn');
+        editarEntradaBtn.addEventListener('click', function () {
+            editarEntrada(registro, div);
+        });
+        
+        const editarSalidaBtn = div.querySelector('.editarSalidaBtn');
+        editarSalidaBtn.addEventListener('click', function () {
+            editarSalida(registro, div);
+        });
 
         const editarExtrasBtn = div.querySelector('.editarExtrasBtn');
         editarExtrasBtn.addEventListener('click', function () {
@@ -564,6 +898,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function editarExtras(registro, div) {
+        // Guardar la posición actual de scroll
+        const scrollPosition = window.scrollY;
+        
         // Verificar si ya existe un formulario de edición en este div
         const existingForm = div.querySelector('.form-editar-extras');
         if (existingForm) {
@@ -721,12 +1058,640 @@ document.addEventListener('DOMContentLoaded', function () {
     function borrarRegistro(registro) {
         registros = registros.filter(r => r !== registro);
         localStorage.setItem('registrosViviendas', JSON.stringify(registros));
-        actualizarUI();
+        /**
+     * Muestra un formulario para editar la fecha y hora de entrada
+     * @param {Object} registro - El registro de la vivienda
+     * @param {HTMLElement} div - El elemento HTML del registro
+     */
+    function editarEntrada(registro, div) {
+        // Guardar la posición actual de scroll
+        const scrollPosition = window.scrollY;
+        
+        // Verificar si ya existe un formulario de edición en este div
+        const existingForm = div.querySelector('.form-editar-entrada');
+        if (existingForm) {
+            // Si ya existe un formulario, lo eliminamos (toggle)
+            div.removeChild(existingForm);
+            return;
+        }
+        
+        // Crear el contenedor del formulario inline
+        const formContainer = document.createElement('div');
+        formContainer.classList.add('form-editar-entrada');
+        formContainer.style.backgroundColor = '#f9f9f9';
+        formContainer.style.padding = '15px';
+        formContainer.style.borderRadius = '8px';
+        formContainer.style.marginTop = '15px';
+        formContainer.style.marginBottom = '15px';
+        formContainer.style.border = '1px solid #ddd';
+
+        // Título del formulario
+        const titulo = document.createElement('h4');
+        titulo.textContent = 'Editar Fecha y Hora de Entrada';
+        titulo.style.marginTop = '0';
+        titulo.style.marginBottom = '10px';
+        titulo.style.color = '#2c3e50';
+        formContainer.appendChild(titulo);
+
+        // Crear formulario para la fecha y hora de entrada
+        const form = document.createElement('form');
+        form.id = 'formEntrada-' + Date.now(); // ID único para evitar conflictos
+        
+        // Campo para la fecha de entrada
+        const fechaDiv = document.createElement('div');
+        fechaDiv.style.marginBottom = '15px';
+        
+        const fechaLabel = document.createElement('label');
+        fechaLabel.textContent = 'Fecha de Entrada:';
+        fechaLabel.style.display = 'block';
+        fechaLabel.style.marginBottom = '5px';
+        
+        const fechaInput = document.createElement('input');
+        fechaInput.type = 'date';
+        fechaInput.name = 'fechaEntrada';
+        fechaInput.value = registro.fechaEntrada || '';
+        fechaInput.style.width = '100%';
+        fechaInput.style.padding = '8px';
+        fechaInput.style.border = '1px solid #ddd';
+        fechaInput.style.borderRadius = '4px';
+        
+        fechaDiv.appendChild(fechaLabel);
+        fechaDiv.appendChild(fechaInput);
+        form.appendChild(fechaDiv);
+        
+        // Campo para la hora de entrada
+        const horaDiv = document.createElement('div');
+        horaDiv.style.marginBottom = '15px';
+        
+        const horaLabel = document.createElement('label');
+        horaLabel.textContent = 'Hora de Entrada:';
+        horaLabel.style.display = 'block';
+        horaLabel.style.marginBottom = '5px';
+        
+        const horaInput = document.createElement('input');
+        horaInput.type = 'time';
+        horaInput.name = 'horaEntrada';
+        horaInput.value = registro.horaEntrada || '';
+        horaInput.style.width = '100%';
+        horaInput.style.padding = '8px';
+        horaInput.style.border = '1px solid #ddd';
+        horaInput.style.borderRadius = '4px';
+        
+        horaDiv.appendChild(horaLabel);
+        horaDiv.appendChild(horaInput);
+        form.appendChild(horaDiv);
+        
+        // Botones de acción
+        const botonesDiv = document.createElement('div');
+        botonesDiv.style.display = 'flex';
+        botonesDiv.style.justifyContent = 'flex-end';
+        botonesDiv.style.gap = '10px';
+        botonesDiv.style.marginTop = '15px';
+
+        const cancelarBtn = document.createElement('button');
+        cancelarBtn.textContent = 'Cancelar';
+        cancelarBtn.type = 'button';
+        cancelarBtn.style.padding = '8px 15px';
+        cancelarBtn.style.backgroundColor = '#6c757d';
+        cancelarBtn.style.color = 'white';
+        cancelarBtn.style.border = 'none';
+        cancelarBtn.style.borderRadius = '5px';
+        cancelarBtn.style.cursor = 'pointer';
+
+        const guardarBtn = document.createElement('button');
+        guardarBtn.textContent = 'Guardar';
+        guardarBtn.type = 'button';
+        guardarBtn.style.padding = '8px 15px';
+        guardarBtn.style.backgroundColor = '#EE1C25';
+        guardarBtn.style.color = 'white';
+        guardarBtn.style.border = 'none';
+        guardarBtn.style.borderRadius = '5px';
+        guardarBtn.style.cursor = 'pointer';
+
+        botonesDiv.appendChild(cancelarBtn);
+        botonesDiv.appendChild(guardarBtn);
+
+        form.appendChild(botonesDiv);
+        formContainer.appendChild(form);
+        
+        // Insertar el formulario después del último botón en el div del registro
+        div.appendChild(formContainer);
+
+        // Evento para cerrar el formulario
+        cancelarBtn.addEventListener('click', function() {
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll al cancelar
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+
+        // Evento para guardar los cambios
+        guardarBtn.addEventListener('click', function() {
+            // Obtener los valores de fecha y hora
+            const fechaEntrada = fechaInput.value;
+            const horaEntrada = horaInput.value;
+            
+            // Actualizar el registro con los nuevos valores
+            registro.fechaEntrada = fechaEntrada;
+            registro.horaEntrada = horaEntrada;
+            
+            // Actualizar el registro en localStorage
+            actualizarRegistro(registro);
+            
+            // Actualizar la vista del registro específico
+            actualizarVistaRegistro(div, registro);
+            
+            // Eliminar el formulario
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+    }
+    
+    /**
+     * Muestra un formulario para editar la fecha y hora de salida
+     * @param {Object} registro - El registro de la vivienda
+     * @param {HTMLElement} div - El elemento HTML del registro
+     */
+    function editarSalida(registro, div) {
+        // Guardar la posición actual de scroll
+        const scrollPosition = window.scrollY;
+        
+        // Verificar si ya existe un formulario de edición en este div
+        const existingForm = div.querySelector('.form-editar-salida');
+        if (existingForm) {
+            // Si ya existe un formulario, lo eliminamos (toggle)
+            div.removeChild(existingForm);
+            return;
+        }
+        
+        // Crear el contenedor del formulario inline
+        const formContainer = document.createElement('div');
+        formContainer.classList.add('form-editar-salida');
+        formContainer.style.backgroundColor = '#f9f9f9';
+        formContainer.style.padding = '15px';
+        formContainer.style.borderRadius = '8px';
+        formContainer.style.marginTop = '15px';
+        formContainer.style.marginBottom = '15px';
+        formContainer.style.border = '1px solid #ddd';
+
+        // Título del formulario
+        const titulo = document.createElement('h4');
+        titulo.textContent = 'Editar Fecha y Hora de Salida';
+        titulo.style.marginTop = '0';
+        titulo.style.marginBottom = '10px';
+        titulo.style.color = '#2c3e50';
+        formContainer.appendChild(titulo);
+
+        // Crear formulario para la fecha y hora de salida
+        const form = document.createElement('form');
+        form.id = 'formSalida-' + Date.now(); // ID único para evitar conflictos
+        
+        // Campo para la fecha de salida
+        const fechaDiv = document.createElement('div');
+        fechaDiv.style.marginBottom = '15px';
+        
+        const fechaLabel = document.createElement('label');
+        fechaLabel.textContent = 'Fecha de Salida:';
+        fechaLabel.style.display = 'block';
+        fechaLabel.style.marginBottom = '5px';
+        
+        const fechaInput = document.createElement('input');
+        fechaInput.type = 'date';
+        fechaInput.name = 'fechaSalida';
+        fechaInput.value = registro.fechaSalida || '';
+        fechaInput.style.width = '100%';
+        fechaInput.style.padding = '8px';
+        fechaInput.style.border = '1px solid #ddd';
+        fechaInput.style.borderRadius = '4px';
+        
+        fechaDiv.appendChild(fechaLabel);
+        fechaDiv.appendChild(fechaInput);
+        form.appendChild(fechaDiv);
+        
+        // Campo para la hora de salida
+        const horaDiv = document.createElement('div');
+        horaDiv.style.marginBottom = '15px';
+        
+        const horaLabel = document.createElement('label');
+        horaLabel.textContent = 'Hora de Salida:';
+        horaLabel.style.display = 'block';
+        horaLabel.style.marginBottom = '5px';
+        
+        const horaInput = document.createElement('input');
+        horaInput.type = 'time';
+        horaInput.name = 'horaSalida';
+        horaInput.value = registro.horaSalida || '';
+        horaInput.style.width = '100%';
+        horaInput.style.padding = '8px';
+        horaInput.style.border = '1px solid #ddd';
+        horaInput.style.borderRadius = '4px';
+        
+        horaDiv.appendChild(horaLabel);
+        horaDiv.appendChild(horaInput);
+        form.appendChild(horaDiv);
+        
+        // Botones de acción
+        const botonesDiv = document.createElement('div');
+        botonesDiv.style.display = 'flex';
+        botonesDiv.style.justifyContent = 'flex-end';
+        botonesDiv.style.gap = '10px';
+        botonesDiv.style.marginTop = '15px';
+
+        const cancelarBtn = document.createElement('button');
+        cancelarBtn.textContent = 'Cancelar';
+        cancelarBtn.type = 'button';
+        cancelarBtn.style.padding = '8px 15px';
+        cancelarBtn.style.backgroundColor = '#6c757d';
+        cancelarBtn.style.color = 'white';
+        cancelarBtn.style.border = 'none';
+        cancelarBtn.style.borderRadius = '5px';
+        cancelarBtn.style.cursor = 'pointer';
+
+        const guardarBtn = document.createElement('button');
+        guardarBtn.textContent = 'Guardar';
+        guardarBtn.type = 'button';
+        guardarBtn.style.padding = '8px 15px';
+        guardarBtn.style.backgroundColor = '#EE1C25';
+        guardarBtn.style.color = 'white';
+        guardarBtn.style.border = 'none';
+        guardarBtn.style.borderRadius = '5px';
+        guardarBtn.style.cursor = 'pointer';
+
+        botonesDiv.appendChild(cancelarBtn);
+        botonesDiv.appendChild(guardarBtn);
+
+        form.appendChild(botonesDiv);
+        formContainer.appendChild(form);
+        
+        // Insertar el formulario después del último botón en el div del registro
+        div.appendChild(formContainer);
+
+        // Evento para cerrar el formulario
+        cancelarBtn.addEventListener('click', function() {
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll al cancelar
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+
+        // Evento para guardar los cambios
+        guardarBtn.addEventListener('click', function() {
+            // Obtener los valores de fecha y hora
+            const fechaSalida = fechaInput.value;
+            const horaSalida = horaInput.value;
+            
+            // Actualizar el registro con los nuevos valores
+            registro.fechaSalida = fechaSalida;
+            registro.horaSalida = horaSalida;
+            
+            // Actualizar el registro en localStorage
+            actualizarRegistro(registro);
+            
+            // Actualizar la vista del registro específico
+            actualizarVistaRegistro(div, registro);
+            
+            // Eliminar el formulario
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+    }
+    
+    actualizarUI();
     }
 
     function actualizarRegistro(registro) {
         localStorage.setItem('registrosViviendas', JSON.stringify(registros));
-        actualizarUI();
+        /**
+     * Muestra un formulario para editar la fecha y hora de entrada
+     * @param {Object} registro - El registro de la vivienda
+     * @param {HTMLElement} div - El elemento HTML del registro
+     */
+    function editarEntrada(registro, div) {
+        // Guardar la posición actual de scroll
+        const scrollPosition = window.scrollY;
+        
+        // Verificar si ya existe un formulario de edición en este div
+        const existingForm = div.querySelector('.form-editar-entrada');
+        if (existingForm) {
+            // Si ya existe un formulario, lo eliminamos (toggle)
+            div.removeChild(existingForm);
+            return;
+        }
+        
+        // Crear el contenedor del formulario inline
+        const formContainer = document.createElement('div');
+        formContainer.classList.add('form-editar-entrada');
+        formContainer.style.backgroundColor = '#f9f9f9';
+        formContainer.style.padding = '15px';
+        formContainer.style.borderRadius = '8px';
+        formContainer.style.marginTop = '15px';
+        formContainer.style.marginBottom = '15px';
+        formContainer.style.border = '1px solid #ddd';
+
+        // Título del formulario
+        const titulo = document.createElement('h4');
+        titulo.textContent = 'Editar Fecha y Hora de Entrada';
+        titulo.style.marginTop = '0';
+        titulo.style.marginBottom = '10px';
+        titulo.style.color = '#2c3e50';
+        formContainer.appendChild(titulo);
+
+        // Crear formulario para la fecha y hora de entrada
+        const form = document.createElement('form');
+        form.id = 'formEntrada-' + Date.now(); // ID único para evitar conflictos
+        
+        // Campo para la fecha de entrada
+        const fechaDiv = document.createElement('div');
+        fechaDiv.style.marginBottom = '15px';
+        
+        const fechaLabel = document.createElement('label');
+        fechaLabel.textContent = 'Fecha de Entrada:';
+        fechaLabel.style.display = 'block';
+        fechaLabel.style.marginBottom = '5px';
+        
+        const fechaInput = document.createElement('input');
+        fechaInput.type = 'date';
+        fechaInput.name = 'fechaEntrada';
+        fechaInput.value = registro.fechaEntrada || '';
+        fechaInput.style.width = '100%';
+        fechaInput.style.padding = '8px';
+        fechaInput.style.border = '1px solid #ddd';
+        fechaInput.style.borderRadius = '4px';
+        
+        fechaDiv.appendChild(fechaLabel);
+        fechaDiv.appendChild(fechaInput);
+        form.appendChild(fechaDiv);
+        
+        // Campo para la hora de entrada
+        const horaDiv = document.createElement('div');
+        horaDiv.style.marginBottom = '15px';
+        
+        const horaLabel = document.createElement('label');
+        horaLabel.textContent = 'Hora de Entrada:';
+        horaLabel.style.display = 'block';
+        horaLabel.style.marginBottom = '5px';
+        
+        const horaInput = document.createElement('input');
+        horaInput.type = 'time';
+        horaInput.name = 'horaEntrada';
+        horaInput.value = registro.horaEntrada || '';
+        horaInput.style.width = '100%';
+        horaInput.style.padding = '8px';
+        horaInput.style.border = '1px solid #ddd';
+        horaInput.style.borderRadius = '4px';
+        
+        horaDiv.appendChild(horaLabel);
+        horaDiv.appendChild(horaInput);
+        form.appendChild(horaDiv);
+        
+        // Botones de acción
+        const botonesDiv = document.createElement('div');
+        botonesDiv.style.display = 'flex';
+        botonesDiv.style.justifyContent = 'flex-end';
+        botonesDiv.style.gap = '10px';
+        botonesDiv.style.marginTop = '15px';
+
+        const cancelarBtn = document.createElement('button');
+        cancelarBtn.textContent = 'Cancelar';
+        cancelarBtn.type = 'button';
+        cancelarBtn.style.padding = '8px 15px';
+        cancelarBtn.style.backgroundColor = '#6c757d';
+        cancelarBtn.style.color = 'white';
+        cancelarBtn.style.border = 'none';
+        cancelarBtn.style.borderRadius = '5px';
+        cancelarBtn.style.cursor = 'pointer';
+
+        const guardarBtn = document.createElement('button');
+        guardarBtn.textContent = 'Guardar';
+        guardarBtn.type = 'button';
+        guardarBtn.style.padding = '8px 15px';
+        guardarBtn.style.backgroundColor = '#EE1C25';
+        guardarBtn.style.color = 'white';
+        guardarBtn.style.border = 'none';
+        guardarBtn.style.borderRadius = '5px';
+        guardarBtn.style.cursor = 'pointer';
+
+        botonesDiv.appendChild(cancelarBtn);
+        botonesDiv.appendChild(guardarBtn);
+
+        form.appendChild(botonesDiv);
+        formContainer.appendChild(form);
+        
+        // Insertar el formulario después del último botón en el div del registro
+        div.appendChild(formContainer);
+
+        // Evento para cerrar el formulario
+        cancelarBtn.addEventListener('click', function() {
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll al cancelar
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+
+        // Evento para guardar los cambios
+        guardarBtn.addEventListener('click', function() {
+            // Obtener los valores de fecha y hora
+            const fechaEntrada = fechaInput.value;
+            const horaEntrada = horaInput.value;
+            
+            // Actualizar el registro con los nuevos valores
+            registro.fechaEntrada = fechaEntrada;
+            registro.horaEntrada = horaEntrada;
+            
+            // Actualizar el registro en localStorage
+            actualizarRegistro(registro);
+            
+            // Actualizar la vista del registro específico
+            actualizarVistaRegistro(div, registro);
+            
+            // Eliminar el formulario
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+    }
+    
+    /**
+     * Muestra un formulario para editar la fecha y hora de salida
+     * @param {Object} registro - El registro de la vivienda
+     * @param {HTMLElement} div - El elemento HTML del registro
+     */
+    function editarSalida(registro, div) {
+        // Guardar la posición actual de scroll
+        const scrollPosition = window.scrollY;
+        
+        // Verificar si ya existe un formulario de edición en este div
+        const existingForm = div.querySelector('.form-editar-salida');
+        if (existingForm) {
+            // Si ya existe un formulario, lo eliminamos (toggle)
+            div.removeChild(existingForm);
+            return;
+        }
+        
+        // Crear el contenedor del formulario inline
+        const formContainer = document.createElement('div');
+        formContainer.classList.add('form-editar-salida');
+        formContainer.style.backgroundColor = '#f9f9f9';
+        formContainer.style.padding = '15px';
+        formContainer.style.borderRadius = '8px';
+        formContainer.style.marginTop = '15px';
+        formContainer.style.marginBottom = '15px';
+        formContainer.style.border = '1px solid #ddd';
+
+        // Título del formulario
+        const titulo = document.createElement('h4');
+        titulo.textContent = 'Editar Fecha y Hora de Salida';
+        titulo.style.marginTop = '0';
+        titulo.style.marginBottom = '10px';
+        titulo.style.color = '#2c3e50';
+        formContainer.appendChild(titulo);
+
+        // Crear formulario para la fecha y hora de salida
+        const form = document.createElement('form');
+        form.id = 'formSalida-' + Date.now(); // ID único para evitar conflictos
+        
+        // Campo para la fecha de salida
+        const fechaDiv = document.createElement('div');
+        fechaDiv.style.marginBottom = '15px';
+        
+        const fechaLabel = document.createElement('label');
+        fechaLabel.textContent = 'Fecha de Salida:';
+        fechaLabel.style.display = 'block';
+        fechaLabel.style.marginBottom = '5px';
+        
+        const fechaInput = document.createElement('input');
+        fechaInput.type = 'date';
+        fechaInput.name = 'fechaSalida';
+        fechaInput.value = registro.fechaSalida || '';
+        fechaInput.style.width = '100%';
+        fechaInput.style.padding = '8px';
+        fechaInput.style.border = '1px solid #ddd';
+        fechaInput.style.borderRadius = '4px';
+        
+        fechaDiv.appendChild(fechaLabel);
+        fechaDiv.appendChild(fechaInput);
+        form.appendChild(fechaDiv);
+        
+        // Campo para la hora de salida
+        const horaDiv = document.createElement('div');
+        horaDiv.style.marginBottom = '15px';
+        
+        const horaLabel = document.createElement('label');
+        horaLabel.textContent = 'Hora de Salida:';
+        horaLabel.style.display = 'block';
+        horaLabel.style.marginBottom = '5px';
+        
+        const horaInput = document.createElement('input');
+        horaInput.type = 'time';
+        horaInput.name = 'horaSalida';
+        horaInput.value = registro.horaSalida || '';
+        horaInput.style.width = '100%';
+        horaInput.style.padding = '8px';
+        horaInput.style.border = '1px solid #ddd';
+        horaInput.style.borderRadius = '4px';
+        
+        horaDiv.appendChild(horaLabel);
+        horaDiv.appendChild(horaInput);
+        form.appendChild(horaDiv);
+        
+        // Botones de acción
+        const botonesDiv = document.createElement('div');
+        botonesDiv.style.display = 'flex';
+        botonesDiv.style.justifyContent = 'flex-end';
+        botonesDiv.style.gap = '10px';
+        botonesDiv.style.marginTop = '15px';
+
+        const cancelarBtn = document.createElement('button');
+        cancelarBtn.textContent = 'Cancelar';
+        cancelarBtn.type = 'button';
+        cancelarBtn.style.padding = '8px 15px';
+        cancelarBtn.style.backgroundColor = '#6c757d';
+        cancelarBtn.style.color = 'white';
+        cancelarBtn.style.border = 'none';
+        cancelarBtn.style.borderRadius = '5px';
+        cancelarBtn.style.cursor = 'pointer';
+
+        const guardarBtn = document.createElement('button');
+        guardarBtn.textContent = 'Guardar';
+        guardarBtn.type = 'button';
+        guardarBtn.style.padding = '8px 15px';
+        guardarBtn.style.backgroundColor = '#EE1C25';
+        guardarBtn.style.color = 'white';
+        guardarBtn.style.border = 'none';
+        guardarBtn.style.borderRadius = '5px';
+        guardarBtn.style.cursor = 'pointer';
+
+        botonesDiv.appendChild(cancelarBtn);
+        botonesDiv.appendChild(guardarBtn);
+
+        form.appendChild(botonesDiv);
+        formContainer.appendChild(form);
+        
+        // Insertar el formulario después del último botón en el div del registro
+        div.appendChild(formContainer);
+
+        // Evento para cerrar el formulario
+        cancelarBtn.addEventListener('click', function() {
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll al cancelar
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+
+        // Evento para guardar los cambios
+        guardarBtn.addEventListener('click', function() {
+            // Obtener los valores de fecha y hora
+            const fechaSalida = fechaInput.value;
+            const horaSalida = horaInput.value;
+            
+            // Actualizar el registro con los nuevos valores
+            registro.fechaSalida = fechaSalida;
+            registro.horaSalida = horaSalida;
+            
+            // Actualizar el registro en localStorage
+            actualizarRegistro(registro);
+            
+            // Actualizar la vista del registro específico
+            actualizarVistaRegistro(div, registro);
+            
+            // Eliminar el formulario
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+    }
+    
+    actualizarUI();
     }
 
     function actualizarVistaRegistro(div, registro) {
@@ -1188,6 +2153,320 @@ document.addEventListener('DOMContentLoaded', function () {
 
     btnDescargarCSV.addEventListener('click', descargarCSV);
     
+    /**
+     * Muestra un formulario para editar la fecha y hora de entrada
+     * @param {Object} registro - El registro de la vivienda
+     * @param {HTMLElement} div - El elemento HTML del registro
+     */
+    function editarEntrada(registro, div) {
+        // Guardar la posición actual de scroll
+        const scrollPosition = window.scrollY;
+        
+        // Verificar si ya existe un formulario de edición en este div
+        const existingForm = div.querySelector('.form-editar-entrada');
+        if (existingForm) {
+            // Si ya existe un formulario, lo eliminamos (toggle)
+            div.removeChild(existingForm);
+            return;
+        }
+        
+        // Crear el contenedor del formulario inline
+        const formContainer = document.createElement('div');
+        formContainer.classList.add('form-editar-entrada');
+        formContainer.style.backgroundColor = '#f9f9f9';
+        formContainer.style.padding = '15px';
+        formContainer.style.borderRadius = '8px';
+        formContainer.style.marginTop = '15px';
+        formContainer.style.marginBottom = '15px';
+        formContainer.style.border = '1px solid #ddd';
+
+        // Título del formulario
+        const titulo = document.createElement('h4');
+        titulo.textContent = 'Editar Fecha y Hora de Entrada';
+        titulo.style.marginTop = '0';
+        titulo.style.marginBottom = '10px';
+        titulo.style.color = '#2c3e50';
+        formContainer.appendChild(titulo);
+
+        // Crear formulario para la fecha y hora de entrada
+        const form = document.createElement('form');
+        form.id = 'formEntrada-' + Date.now(); // ID único para evitar conflictos
+        
+        // Campo para la fecha de entrada
+        const fechaDiv = document.createElement('div');
+        fechaDiv.style.marginBottom = '15px';
+        
+        const fechaLabel = document.createElement('label');
+        fechaLabel.textContent = 'Fecha de Entrada:';
+        fechaLabel.style.display = 'block';
+        fechaLabel.style.marginBottom = '5px';
+        
+        const fechaInput = document.createElement('input');
+        fechaInput.type = 'date';
+        fechaInput.name = 'fechaEntrada';
+        fechaInput.value = registro.fechaEntrada || '';
+        fechaInput.style.width = '100%';
+        fechaInput.style.padding = '8px';
+        fechaInput.style.border = '1px solid #ddd';
+        fechaInput.style.borderRadius = '4px';
+        
+        fechaDiv.appendChild(fechaLabel);
+        fechaDiv.appendChild(fechaInput);
+        form.appendChild(fechaDiv);
+        
+        // Campo para la hora de entrada
+        const horaDiv = document.createElement('div');
+        horaDiv.style.marginBottom = '15px';
+        
+        const horaLabel = document.createElement('label');
+        horaLabel.textContent = 'Hora de Entrada:';
+        horaLabel.style.display = 'block';
+        horaLabel.style.marginBottom = '5px';
+        
+        const horaInput = document.createElement('input');
+        horaInput.type = 'time';
+        horaInput.name = 'horaEntrada';
+        horaInput.value = registro.horaEntrada || '';
+        horaInput.style.width = '100%';
+        horaInput.style.padding = '8px';
+        horaInput.style.border = '1px solid #ddd';
+        horaInput.style.borderRadius = '4px';
+        
+        horaDiv.appendChild(horaLabel);
+        horaDiv.appendChild(horaInput);
+        form.appendChild(horaDiv);
+        
+        // Botones de acción
+        const botonesDiv = document.createElement('div');
+        botonesDiv.style.display = 'flex';
+        botonesDiv.style.justifyContent = 'flex-end';
+        botonesDiv.style.gap = '10px';
+        botonesDiv.style.marginTop = '15px';
+
+        const cancelarBtn = document.createElement('button');
+        cancelarBtn.textContent = 'Cancelar';
+        cancelarBtn.type = 'button';
+        cancelarBtn.style.padding = '8px 15px';
+        cancelarBtn.style.backgroundColor = '#6c757d';
+        cancelarBtn.style.color = 'white';
+        cancelarBtn.style.border = 'none';
+        cancelarBtn.style.borderRadius = '5px';
+        cancelarBtn.style.cursor = 'pointer';
+
+        const guardarBtn = document.createElement('button');
+        guardarBtn.textContent = 'Guardar';
+        guardarBtn.type = 'button';
+        guardarBtn.style.padding = '8px 15px';
+        guardarBtn.style.backgroundColor = '#EE1C25';
+        guardarBtn.style.color = 'white';
+        guardarBtn.style.border = 'none';
+        guardarBtn.style.borderRadius = '5px';
+        guardarBtn.style.cursor = 'pointer';
+
+        botonesDiv.appendChild(cancelarBtn);
+        botonesDiv.appendChild(guardarBtn);
+
+        form.appendChild(botonesDiv);
+        formContainer.appendChild(form);
+        
+        // Insertar el formulario después del último botón en el div del registro
+        div.appendChild(formContainer);
+
+        // Evento para cerrar el formulario
+        cancelarBtn.addEventListener('click', function() {
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll al cancelar
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+
+        // Evento para guardar los cambios
+        guardarBtn.addEventListener('click', function() {
+            // Obtener los valores de fecha y hora
+            const nuevaFecha = fechaInput.value;
+            const nuevaHora = horaInput.value;
+            
+            // Actualizar el registro con los nuevos valores
+            registro.fechaEntrada = nuevaFecha;
+            registro.horaEntrada = nuevaHora;
+            
+            // Actualizar el registro en localStorage
+            actualizarRegistro(registro);
+            
+            // Actualizar la vista del registro específico
+            actualizarVistaRegistro(div, registro);
+            
+            // Eliminar el formulario
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+    }
+    
+    /**
+     * Muestra un formulario para editar la fecha y hora de salida
+     * @param {Object} registro - El registro de la vivienda
+     * @param {HTMLElement} div - El elemento HTML del registro
+     */
+    function editarSalida(registro, div) {
+        // Guardar la posición actual de scroll
+        const scrollPosition = window.scrollY;
+        
+        // Verificar si ya existe un formulario de edición en este div
+        const existingForm = div.querySelector('.form-editar-salida');
+        if (existingForm) {
+            // Si ya existe un formulario, lo eliminamos (toggle)
+            div.removeChild(existingForm);
+            return;
+        }
+        
+        // Crear el contenedor del formulario inline
+        const formContainer = document.createElement('div');
+        formContainer.classList.add('form-editar-salida');
+        formContainer.style.backgroundColor = '#f9f9f9';
+        formContainer.style.padding = '15px';
+        formContainer.style.borderRadius = '8px';
+        formContainer.style.marginTop = '15px';
+        formContainer.style.marginBottom = '15px';
+        formContainer.style.border = '1px solid #ddd';
+
+        // Título del formulario
+        const titulo = document.createElement('h4');
+        titulo.textContent = 'Editar Fecha y Hora de Salida';
+        titulo.style.marginTop = '0';
+        titulo.style.marginBottom = '10px';
+        titulo.style.color = '#2c3e50';
+        formContainer.appendChild(titulo);
+
+        // Crear formulario para la fecha y hora de salida
+        const form = document.createElement('form');
+        form.id = 'formSalida-' + Date.now(); // ID único para evitar conflictos
+        
+        // Campo para la fecha de salida
+        const fechaDiv = document.createElement('div');
+        fechaDiv.style.marginBottom = '15px';
+        
+        const fechaLabel = document.createElement('label');
+        fechaLabel.textContent = 'Fecha de Salida:';
+        fechaLabel.style.display = 'block';
+        fechaLabel.style.marginBottom = '5px';
+        
+        const fechaInput = document.createElement('input');
+        fechaInput.type = 'date';
+        fechaInput.name = 'fechaSalida';
+        fechaInput.value = registro.fechaSalida || '';
+        fechaInput.style.width = '100%';
+        fechaInput.style.padding = '8px';
+        fechaInput.style.border = '1px solid #ddd';
+        fechaInput.style.borderRadius = '4px';
+        
+        fechaDiv.appendChild(fechaLabel);
+        fechaDiv.appendChild(fechaInput);
+        form.appendChild(fechaDiv);
+        
+        // Campo para la hora de salida
+        const horaDiv = document.createElement('div');
+        horaDiv.style.marginBottom = '15px';
+        
+        const horaLabel = document.createElement('label');
+        horaLabel.textContent = 'Hora de Salida:';
+        horaLabel.style.display = 'block';
+        horaLabel.style.marginBottom = '5px';
+        
+        const horaInput = document.createElement('input');
+        horaInput.type = 'time';
+        horaInput.name = 'horaSalida';
+        horaInput.value = registro.horaSalida || '';
+        horaInput.style.width = '100%';
+        horaInput.style.padding = '8px';
+        horaInput.style.border = '1px solid #ddd';
+        horaInput.style.borderRadius = '4px';
+        
+        horaDiv.appendChild(horaLabel);
+        horaDiv.appendChild(horaInput);
+        form.appendChild(horaDiv);
+        
+        // Botones de acción
+        const botonesDiv = document.createElement('div');
+        botonesDiv.style.display = 'flex';
+        botonesDiv.style.justifyContent = 'flex-end';
+        botonesDiv.style.gap = '10px';
+        botonesDiv.style.marginTop = '15px';
+
+        const cancelarBtn = document.createElement('button');
+        cancelarBtn.textContent = 'Cancelar';
+        cancelarBtn.type = 'button';
+        cancelarBtn.style.padding = '8px 15px';
+        cancelarBtn.style.backgroundColor = '#6c757d';
+        cancelarBtn.style.color = 'white';
+        cancelarBtn.style.border = 'none';
+        cancelarBtn.style.borderRadius = '5px';
+        cancelarBtn.style.cursor = 'pointer';
+
+        const guardarBtn = document.createElement('button');
+        guardarBtn.textContent = 'Guardar';
+        guardarBtn.type = 'button';
+        guardarBtn.style.padding = '8px 15px';
+        guardarBtn.style.backgroundColor = '#EE1C25';
+        guardarBtn.style.color = 'white';
+        guardarBtn.style.border = 'none';
+        guardarBtn.style.borderRadius = '5px';
+        guardarBtn.style.cursor = 'pointer';
+
+        botonesDiv.appendChild(cancelarBtn);
+        botonesDiv.appendChild(guardarBtn);
+
+        form.appendChild(botonesDiv);
+        formContainer.appendChild(form);
+        
+        // Insertar el formulario después del último botón en el div del registro
+        div.appendChild(formContainer);
+
+        // Evento para cerrar el formulario
+        cancelarBtn.addEventListener('click', function() {
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll al cancelar
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+
+        // Evento para guardar los cambios
+        guardarBtn.addEventListener('click', function() {
+            // Obtener los valores de fecha y hora
+            const nuevaFecha = fechaInput.value;
+            const nuevaHora = horaInput.value;
+            
+            // Actualizar el registro con los nuevos valores
+            registro.fechaSalida = nuevaFecha;
+            registro.horaSalida = nuevaHora;
+            
+            // Actualizar el registro en localStorage
+            actualizarRegistro(registro);
+            
+            // Actualizar la vista del registro específico
+            actualizarVistaRegistro(div, registro);
+            
+            // Eliminar el formulario
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+    }
+    
     // Función para mostrar detalles de una propiedad cuando se hace clic en el botón
     function mostrarDetallesPropiedad(registro, desdeHistorial = false) {
         // Si viene desde el historial, intentar navegar a la sección de viviendas correspondiente
@@ -1289,5 +2568,319 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    /**
+     * Muestra un formulario para editar la fecha y hora de entrada
+     * @param {Object} registro - El registro de la vivienda
+     * @param {HTMLElement} div - El elemento HTML del registro
+     */
+    function editarEntrada(registro, div) {
+        // Guardar la posición actual de scroll
+        const scrollPosition = window.scrollY;
+        
+        // Verificar si ya existe un formulario de edición en este div
+        const existingForm = div.querySelector('.form-editar-entrada');
+        if (existingForm) {
+            // Si ya existe un formulario, lo eliminamos (toggle)
+            div.removeChild(existingForm);
+            return;
+        }
+        
+        // Crear el contenedor del formulario inline
+        const formContainer = document.createElement('div');
+        formContainer.classList.add('form-editar-entrada');
+        formContainer.style.backgroundColor = '#f9f9f9';
+        formContainer.style.padding = '15px';
+        formContainer.style.borderRadius = '8px';
+        formContainer.style.marginTop = '15px';
+        formContainer.style.marginBottom = '15px';
+        formContainer.style.border = '1px solid #ddd';
+
+        // Título del formulario
+        const titulo = document.createElement('h4');
+        titulo.textContent = 'Editar Fecha y Hora de Entrada';
+        titulo.style.marginTop = '0';
+        titulo.style.marginBottom = '10px';
+        titulo.style.color = '#2c3e50';
+        formContainer.appendChild(titulo);
+
+        // Crear formulario para la fecha y hora de entrada
+        const form = document.createElement('form');
+        form.id = 'formEntrada-' + Date.now(); // ID único para evitar conflictos
+        
+        // Campo para la fecha de entrada
+        const fechaDiv = document.createElement('div');
+        fechaDiv.style.marginBottom = '15px';
+        
+        const fechaLabel = document.createElement('label');
+        fechaLabel.textContent = 'Fecha de Entrada:';
+        fechaLabel.style.display = 'block';
+        fechaLabel.style.marginBottom = '5px';
+        
+        const fechaInput = document.createElement('input');
+        fechaInput.type = 'date';
+        fechaInput.name = 'fechaEntrada';
+        fechaInput.value = registro.fechaEntrada || '';
+        fechaInput.style.width = '100%';
+        fechaInput.style.padding = '8px';
+        fechaInput.style.border = '1px solid #ddd';
+        fechaInput.style.borderRadius = '4px';
+        
+        fechaDiv.appendChild(fechaLabel);
+        fechaDiv.appendChild(fechaInput);
+        form.appendChild(fechaDiv);
+        
+        // Campo para la hora de entrada
+        const horaDiv = document.createElement('div');
+        horaDiv.style.marginBottom = '15px';
+        
+        const horaLabel = document.createElement('label');
+        horaLabel.textContent = 'Hora de Entrada:';
+        horaLabel.style.display = 'block';
+        horaLabel.style.marginBottom = '5px';
+        
+        const horaInput = document.createElement('input');
+        horaInput.type = 'time';
+        horaInput.name = 'horaEntrada';
+        horaInput.value = registro.horaEntrada || '';
+        horaInput.style.width = '100%';
+        horaInput.style.padding = '8px';
+        horaInput.style.border = '1px solid #ddd';
+        horaInput.style.borderRadius = '4px';
+        
+        horaDiv.appendChild(horaLabel);
+        horaDiv.appendChild(horaInput);
+        form.appendChild(horaDiv);
+        
+        // Botones de acción
+        const botonesDiv = document.createElement('div');
+        botonesDiv.style.display = 'flex';
+        botonesDiv.style.justifyContent = 'flex-end';
+        botonesDiv.style.gap = '10px';
+        botonesDiv.style.marginTop = '15px';
+
+        const cancelarBtn = document.createElement('button');
+        cancelarBtn.textContent = 'Cancelar';
+        cancelarBtn.type = 'button';
+        cancelarBtn.style.padding = '8px 15px';
+        cancelarBtn.style.backgroundColor = '#6c757d';
+        cancelarBtn.style.color = 'white';
+        cancelarBtn.style.border = 'none';
+        cancelarBtn.style.borderRadius = '5px';
+        cancelarBtn.style.cursor = 'pointer';
+
+        const guardarBtn = document.createElement('button');
+        guardarBtn.textContent = 'Guardar';
+        guardarBtn.type = 'button';
+        guardarBtn.style.padding = '8px 15px';
+        guardarBtn.style.backgroundColor = '#EE1C25';
+        guardarBtn.style.color = 'white';
+        guardarBtn.style.border = 'none';
+        guardarBtn.style.borderRadius = '5px';
+        guardarBtn.style.cursor = 'pointer';
+
+        botonesDiv.appendChild(cancelarBtn);
+        botonesDiv.appendChild(guardarBtn);
+
+        form.appendChild(botonesDiv);
+        formContainer.appendChild(form);
+        
+        // Insertar el formulario después del último botón en el div del registro
+        div.appendChild(formContainer);
+
+        // Evento para cerrar el formulario
+        cancelarBtn.addEventListener('click', function() {
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll al cancelar
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+
+        // Evento para guardar los cambios
+        guardarBtn.addEventListener('click', function() {
+            // Obtener los valores de fecha y hora
+            const fechaEntrada = fechaInput.value;
+            const horaEntrada = horaInput.value;
+            
+            // Actualizar el registro con los nuevos valores
+            registro.fechaEntrada = fechaEntrada;
+            registro.horaEntrada = horaEntrada;
+            
+            // Actualizar el registro en localStorage
+            actualizarRegistro(registro);
+            
+            // Actualizar la vista del registro específico
+            actualizarVistaRegistro(div, registro);
+            
+            // Eliminar el formulario
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+    }
+    
+    /**
+     * Muestra un formulario para editar la fecha y hora de salida
+     * @param {Object} registro - El registro de la vivienda
+     * @param {HTMLElement} div - El elemento HTML del registro
+     */
+    function editarSalida(registro, div) {
+        // Guardar la posición actual de scroll
+        const scrollPosition = window.scrollY;
+        
+        // Verificar si ya existe un formulario de edición en este div
+        const existingForm = div.querySelector('.form-editar-salida');
+        if (existingForm) {
+            // Si ya existe un formulario, lo eliminamos (toggle)
+            div.removeChild(existingForm);
+            return;
+        }
+        
+        // Crear el contenedor del formulario inline
+        const formContainer = document.createElement('div');
+        formContainer.classList.add('form-editar-salida');
+        formContainer.style.backgroundColor = '#f9f9f9';
+        formContainer.style.padding = '15px';
+        formContainer.style.borderRadius = '8px';
+        formContainer.style.marginTop = '15px';
+        formContainer.style.marginBottom = '15px';
+        formContainer.style.border = '1px solid #ddd';
+
+        // Título del formulario
+        const titulo = document.createElement('h4');
+        titulo.textContent = 'Editar Fecha y Hora de Salida';
+        titulo.style.marginTop = '0';
+        titulo.style.marginBottom = '10px';
+        titulo.style.color = '#2c3e50';
+        formContainer.appendChild(titulo);
+
+        // Crear formulario para la fecha y hora de salida
+        const form = document.createElement('form');
+        form.id = 'formSalida-' + Date.now(); // ID único para evitar conflictos
+        
+        // Campo para la fecha de salida
+        const fechaDiv = document.createElement('div');
+        fechaDiv.style.marginBottom = '15px';
+        
+        const fechaLabel = document.createElement('label');
+        fechaLabel.textContent = 'Fecha de Salida:';
+        fechaLabel.style.display = 'block';
+        fechaLabel.style.marginBottom = '5px';
+        
+        const fechaInput = document.createElement('input');
+        fechaInput.type = 'date';
+        fechaInput.name = 'fechaSalida';
+        fechaInput.value = registro.fechaSalida || '';
+        fechaInput.style.width = '100%';
+        fechaInput.style.padding = '8px';
+        fechaInput.style.border = '1px solid #ddd';
+        fechaInput.style.borderRadius = '4px';
+        
+        fechaDiv.appendChild(fechaLabel);
+        fechaDiv.appendChild(fechaInput);
+        form.appendChild(fechaDiv);
+        
+        // Campo para la hora de salida
+        const horaDiv = document.createElement('div');
+        horaDiv.style.marginBottom = '15px';
+        
+        const horaLabel = document.createElement('label');
+        horaLabel.textContent = 'Hora de Salida:';
+        horaLabel.style.display = 'block';
+        horaLabel.style.marginBottom = '5px';
+        
+        const horaInput = document.createElement('input');
+        horaInput.type = 'time';
+        horaInput.name = 'horaSalida';
+        horaInput.value = registro.horaSalida || '';
+        horaInput.style.width = '100%';
+        horaInput.style.padding = '8px';
+        horaInput.style.border = '1px solid #ddd';
+        horaInput.style.borderRadius = '4px';
+        
+        horaDiv.appendChild(horaLabel);
+        horaDiv.appendChild(horaInput);
+        form.appendChild(horaDiv);
+        
+        // Botones de acción
+        const botonesDiv = document.createElement('div');
+        botonesDiv.style.display = 'flex';
+        botonesDiv.style.justifyContent = 'flex-end';
+        botonesDiv.style.gap = '10px';
+        botonesDiv.style.marginTop = '15px';
+
+        const cancelarBtn = document.createElement('button');
+        cancelarBtn.textContent = 'Cancelar';
+        cancelarBtn.type = 'button';
+        cancelarBtn.style.padding = '8px 15px';
+        cancelarBtn.style.backgroundColor = '#6c757d';
+        cancelarBtn.style.color = 'white';
+        cancelarBtn.style.border = 'none';
+        cancelarBtn.style.borderRadius = '5px';
+        cancelarBtn.style.cursor = 'pointer';
+
+        const guardarBtn = document.createElement('button');
+        guardarBtn.textContent = 'Guardar';
+        guardarBtn.type = 'button';
+        guardarBtn.style.padding = '8px 15px';
+        guardarBtn.style.backgroundColor = '#EE1C25';
+        guardarBtn.style.color = 'white';
+        guardarBtn.style.border = 'none';
+        guardarBtn.style.borderRadius = '5px';
+        guardarBtn.style.cursor = 'pointer';
+
+        botonesDiv.appendChild(cancelarBtn);
+        botonesDiv.appendChild(guardarBtn);
+
+        form.appendChild(botonesDiv);
+        formContainer.appendChild(form);
+        
+        // Insertar el formulario después del último botón en el div del registro
+        div.appendChild(formContainer);
+
+        // Evento para cerrar el formulario
+        cancelarBtn.addEventListener('click', function() {
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll al cancelar
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+
+        // Evento para guardar los cambios
+        guardarBtn.addEventListener('click', function() {
+            // Obtener los valores de fecha y hora
+            const fechaSalida = fechaInput.value;
+            const horaSalida = horaInput.value;
+            
+            // Actualizar el registro con los nuevos valores
+            registro.fechaSalida = fechaSalida;
+            registro.horaSalida = horaSalida;
+            
+            // Actualizar el registro en localStorage
+            actualizarRegistro(registro);
+            
+            // Actualizar la vista del registro específico
+            actualizarVistaRegistro(div, registro);
+            
+            // Eliminar el formulario
+            div.removeChild(formContainer);
+            
+            // Restaurar la posición de scroll
+            window.scrollTo({
+                top: scrollPosition,
+                behavior: 'auto'
+            });
+        });
+    }
+    
     actualizarUI();
 });
