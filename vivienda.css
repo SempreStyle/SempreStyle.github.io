@@ -326,8 +326,8 @@ button:active {
 
 /* Estilos para el registro completado */
 #historialRegistros .registro-completado {
-    background-color: #f0fff4;
-    border-left: 4px solid #38a169;
+    background-color: #e6ffed;
+    border-left: 4px solid #2f855a;
 }
 
 /* Estilos para la sección de trabajadoras en el historial */
@@ -415,8 +415,8 @@ button:active {
 
 /* Estilos para los botones de propiedades completadas */
 .propiedad-btn.propiedad-completada {
-    background-color: #f0fff4;
-    border-left: 5px solid #38a169;
+    background-color: #e6ffed;
+    border-left: 5px solid #2f855a;
 }
 
 #historialRegistros .registro:hover {
