@@ -563,6 +563,58 @@ button:active {
 
 /* Diseño responsivo */
 @media screen and (max-width: 768px) {
+    /* Estilos para los modales de edición en dispositivos móviles */
+    @media screen and (max-width: 768px) {
+        /* Estilos generales para todos los formularios de edición */
+        .form-editar-extras,
+        .form-editar-trabajadoras,
+        .form-editar-anotaciones {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 10px !important;
+            box-sizing: border-box !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+        
+        /* Ajustes para el grid de extras */
+        .form-editar-extras div[style*="grid"] {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+        }
+        
+        /* Ajustes para los inputs y labels */
+        .form-editar-trabajadoras div {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+        
+        .form-editar-trabajadoras label {
+            margin-bottom: 5px !important;
+            width: auto !important;
+        }
+        
+        .form-editar-trabajadoras input[type="number"] {
+            width: 100% !important;
+            margin-top: 5px !important;
+        }
+        
+        /* Ajustes para los botones */
+        .form-editar-extras div[style*="flex"],
+        .form-editar-trabajadoras div[style*="flex"],
+        .form-editar-anotaciones div[style*="flex"] {
+            flex-direction: row !important;
+            width: 100% !important;
+        }
+        
+        .form-editar-extras button,
+        .form-editar-trabajadoras button,
+        .form-editar-anotaciones button {
+            flex: 1 !important;
+            margin: 0 5px !important;
+            padding: 10px 5px !important;
+            font-size: 14px !important;
+        }
+    }
     .nav-container {
         flex-direction: column;
         gap: 10px;
