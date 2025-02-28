@@ -39,6 +39,16 @@ body {
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
+    position: relative; /* Added position relative for absolute positioning of children */
+}
+
+/* Theme toggle button positioning */
+.theme-toggle {
+    position: absolute;
+    right: 5%;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1001;
 }
 
 /* Hamburger menu toggle */
@@ -99,8 +109,11 @@ body {
     }
     
     .theme-toggle {
+        position: absolute;
+        right: 5%;
+        top: 15px;
+        transform: none;
         order: 2;
-        margin-left: auto;
     }
     
     .nav-links {

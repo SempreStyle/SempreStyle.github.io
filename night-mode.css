@@ -39,13 +39,13 @@
     --completed-border: #50fa7b;
     --fieldset-bg: #383a59;
     --highlight-color: #f1fa8c50;
-    --label-color: #ff79c6;
+    --label-color: #8be9fd; /* Changed from #ff79c6 (pink) to #8be9fd (light blue) */
     --vivienda-nombre-color: #8be9fd;
     --vivienda-detalle-color: #f8f8f2;
     --registro-text-color: #f8f8f2;
-    --trabajadoras-heading-color: #ff79c6;
+    --trabajadoras-heading-color: #8be9fd; /* Changed from #ff79c6 (pink) to #8be9fd (light blue) */
     --trabajadoras-text-color: #f8f8f2;
-    --trabajadoras-strong-color: #ffb86c;
+    --trabajadoras-strong-color: #50fa7b; /* Changed from #ffb86c (orange) to #50fa7b (green) for better visibility of apartment numbers */
 }
 
 /* Night mode toggle button */
