@@ -36,9 +36,30 @@ body {
     padding: 0 5%;
     margin: 0 auto;
     display: flex;
-    justify-content: center;
-    gap: 30px;
+    justify-content: space-between;
+    align-items: center;
     flex-wrap: wrap;
+}
+
+/* Hamburger menu toggle */
+.menu-toggle {
+    display: none;
+    cursor: pointer;
+    padding: 10px;
+}
+
+.menu-toggle .bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    background-color: white;
+    transition: all 0.3s ease;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
 }
 
 .nav-link {
@@ -61,6 +82,37 @@ body {
     background: rgba(255, 255, 255, 0.3);
     color: #ffffff;
     box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+}
+
+/* Media queries for responsive design */
+@media screen and (max-width: 768px) {
+    .menu-toggle {
+        display: block;
+    }
+    
+    .nav-links {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px 0;
+    }
+    
+    .nav-links.active {
+        display: flex;
+    }
+    
+    .menu-toggle.active .bar:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+    }
+    
+    .menu-toggle.active .bar:nth-child(2) {
+        opacity: 0;
+    }
+    
+    .menu-toggle.active .bar:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+    }
 }
 
 /* Indicadores de sección */

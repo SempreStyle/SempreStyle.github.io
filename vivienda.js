@@ -6,7 +6,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const viviendasHoy = document.getElementById('viviendasHoy');
     const viviendasManana = document.getElementById('viviendasManana');
     const viviendasPasadoManana = document.getElementById('viviendasPasadoManana');
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
     let registros = JSON.parse(localStorage.getItem('registrosViviendas')) || [];
+    
+    // Función para manejar el menú móvil
+    menuToggle.addEventListener('click', function() {
+        menuToggle.classList.toggle('active');
+        navLinks.classList.toggle('active');
+    });
+    
+    // Cerrar el menú al hacer clic en un enlace
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function() {
+            menuToggle.classList.remove('active');
+            navLinks.classList.remove('active');
+        });
+    });
 
     function mostrarViviendas() {
         const hoy = new Date();
