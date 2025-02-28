@@ -1038,8 +1038,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 const checkbox = document.getElementById(`trabajadora-${trabajadora}-${form.id.split('-')[1]}`);
                 const horasInput = form.querySelector(`input[name="horas-${trabajadora}"]`);
                 
-                if (checkbox && checkbox.checked && horasInput && horasInput.value) {
-                    const horasTrabajadora = parseFloat(horasInput.value);
+                if (checkbox && checkbox.checked) {
+                    // Si el checkbox está marcado, usar el valor de horas o 0 si está vacío
+                    const horasTrabajadora = horasInput && horasInput.value ? parseFloat(horasInput.value) : 0;
                     trabajadorasSeleccionadas.push({
                         nombre: trabajadora,
                         horas: horasTrabajadora
