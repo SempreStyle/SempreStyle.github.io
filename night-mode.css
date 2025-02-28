@@ -20,32 +20,32 @@
     --highlight-color: #fefcbf;
 }
 
-/* Dark mode variables */
+/* Dark mode variables - Dracula theme inspired */
 [data-theme="dark"] {
-    --bg-color: #121212;
-    --text-color: #e0e0e0;
-    --heading-color: #90cdf4;
-    --nav-bg: #1a202c;
-    --nav-text: #f0f0f0;
-    --card-bg: #1e1e1e;
-    --input-bg: #2d3748;
-    --input-border: rgba(144, 205, 244, 0.3);
-    --button-bg: #2b6cb0;
-    --button-hover: #3182ce;
-    --button-text: #f0f0f0;
-    --border-color: rgba(226, 232, 240, 0.1);
+    --bg-color: #282a36;
+    --text-color: #f8f8f2;
+    --heading-color: #8be9fd;
+    --nav-bg: #282a36;
+    --nav-text: #f8f8f2;
+    --card-bg: #44475a;
+    --input-bg: #383a59;
+    --input-border: rgba(139, 233, 253, 0.3);
+    --button-bg: #6272a4;
+    --button-hover: #bd93f9;
+    --button-text: #f8f8f2;
+    --border-color: rgba(248, 248, 242, 0.1);
     --shadow-color: rgba(0, 0, 0, 0.3);
-    --completed-bg: #1c4532;
-    --completed-border: #38a169;
-    --fieldset-bg: #2d3748;
-    --highlight-color: #744210;
-    --label-color: #c5d9f8;
-    --vivienda-nombre-color: #90cdf4;
-    --vivienda-detalle-color: #cbd5e0;
-    --registro-text-color: #e2e8f0;
-    --trabajadoras-heading-color: #90cdf4;
-    --trabajadoras-text-color: #e2e8f0;
-    --trabajadoras-strong-color: #63b3ed;
+    --completed-bg: #50fa7b30;
+    --completed-border: #50fa7b;
+    --fieldset-bg: #383a59;
+    --highlight-color: #f1fa8c50;
+    --label-color: #ff79c6;
+    --vivienda-nombre-color: #8be9fd;
+    --vivienda-detalle-color: #f8f8f2;
+    --registro-text-color: #f8f8f2;
+    --trabajadoras-heading-color: #ff79c6;
+    --trabajadoras-text-color: #f8f8f2;
+    --trabajadoras-strong-color: #ffb86c;
 }
 
 /* Night mode toggle button */
