@@ -527,7 +527,7 @@ button:active {
 }
 
 /* Estilos para botones de acción en registros */
-.borrarBtn, .editarTrabajadorasBtn, .editarExtrasBtn {
+.borrarBtn, .editarTrabajadorasBtn, .editarExtrasBtn, .anotacionesBtn {
     padding: 8px 12px;
     margin-right: 8px;
     margin-top: 10px;

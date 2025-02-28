@@ -208,7 +208,23 @@ document.addEventListener('DOMContentLoaded', function () {
         mostrarHistorialRegistros();
     }
 
+    // Mantener un registro de las fechas expandidas
+    let fechasExpandidas = new Set();
+    
     function mostrarHistorialRegistros() {
+        // Guardar el estado de expansión actual antes de limpiar el contenido
+        document.querySelectorAll('#historialRegistros .grupo').forEach(grupo => {
+            const titulo = grupo.querySelector('.fecha-titulo');
+            const contenido = grupo.querySelector('.contenido');
+            const fecha = titulo.textContent.replace(' ▼', '').replace(' ▲', '');
+            
+            if (contenido.style.display === 'block') {
+                fechasExpandidas.add(fecha);
+            } else {
+                fechasExpandidas.delete(fecha);
+            }
+        });
+        
         historialRegistros.innerHTML = '';
         const registrosAgrupados = agruparRegistrosPorFecha(registros);
 
@@ -230,14 +246,21 @@ document.addEventListener('DOMContentLoaded', function () {
             
             // Añadir indicador visual de expansión
             const indicador = document.createElement('span');
-            indicador.textContent = ' ▼';
             indicador.classList.add('indicador-expansion');
             titulo.appendChild(indicador);
 
             const contenido = document.createElement('div');
             contenido.classList.add('contenido');
-            // Inicialmente ocultar el contenido
-            contenido.style.display = 'none';
+            
+            // Verificar si esta fecha estaba expandida anteriormente
+            const estaExpandida = fechasExpandidas.has(fecha);
+            if (estaExpandida) {
+                contenido.style.display = 'block';
+                indicador.textContent = ' ▲';
+            } else {
+                contenido.style.display = 'none';
+                indicador.textContent = ' ▼';
+            }
 
             registrosPorFecha.forEach(registro => {
                 const entrada = document.createElement('div');
@@ -262,11 +285,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     <p><strong>Horas de Limpieza Total:</strong> ${registro.horasLimpiadora}</p>
                     ${trabajadorasHTML}
                     <p><strong>Extras:</strong> ${registro.extras.join(", ")}</p>
+                    ${registro.anotaciones ? `<p><strong>Anotaciones:</strong> ${registro.anotaciones}</p>` : ''}
                     <button class="borrarBtn">Borrar</button>
                     <button class="editarTrabajadorasBtn">Editar Horas Trabajadoras</button>
                     <button class="editarExtrasBtn">Editar Extras</button>
-                    <button class="completadoBtn ${registro.completado ? 'completado' : ''}">Hecho</button>
+                    <button class="anotacionesBtn">Anotaciones</button>
                     <button class="volverBtn">Volver al Piso</button>
+                    <button class="completadoBtn ${registro.completado ? 'completado' : ''}">Hecho</button>
                 `;
                 
                 // Si está completado, añadir clase a todo el registro
@@ -293,6 +318,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 const editarTrabajadorasBtn = entrada.querySelector('.editarTrabajadorasBtn');
                 editarTrabajadorasBtn.addEventListener('click', function () {
                     editarHorasTrabajadoras(registro, entrada);
+                });
+                
+                const anotacionesBtn = entrada.querySelector('.anotacionesBtn');
+                anotacionesBtn.addEventListener('click', function () {
+                    editarAnotaciones(registro, entrada);
                 });
                 
                 const completadoBtn = entrada.querySelector('.completadoBtn');
@@ -373,7 +403,8 @@ document.addEventListener('DOMContentLoaded', function () {
             horaSalida: registroForm.horaSalida.value || '',
             horasLimpiadora: registroForm.horasLimpiadora.value || "0",
             extras: obtenerExtrasSeleccionados(),
-            trabajadoras: [] // Inicializamos con un array vacío para mantener la estructura de datos
+            trabajadoras: [], // Inicializamos con un array vacío para mantener la estructura de datos
+            anotaciones: "" // Inicializamos con un string vacío para las anotaciones
         };
 
         if ((nuevoRegistro.fechaEntrada || nuevoRegistro.fechaSalida) && nuevoRegistro.vivienda) {
@@ -408,6 +439,11 @@ document.addEventListener('DOMContentLoaded', function () {
             trabajadorasHTML += '</ul></div>';
         }
         
+        // Añadir propiedad 'anotaciones' si no existe
+        if (registro.anotaciones === undefined) {
+            registro.anotaciones = "";
+        }
+        
         div.innerHTML = `
             <p><strong>Vivienda:</strong> ${registro.vivienda}</p>
             <p><strong>Entrada:</strong> ${registro.fechaEntrada ? `${registro.fechaEntrada} a las ${registro.horaEntrada || ''}` : 'N/A'}</p>
@@ -415,11 +451,13 @@ document.addEventListener('DOMContentLoaded', function () {
             <p><strong>Horas de Limpieza Total:</strong> ${registro.horasLimpiadora}</p>
             ${trabajadorasHTML}
             <p><strong>Extras:</strong> ${registro.extras.join(", ")}</p>
+            ${registro.anotaciones ? `<p><strong>Anotaciones:</strong> ${registro.anotaciones}</p>` : ''}
             <button class="borrarBtn">Borrar</button>
             <button class="editarTrabajadorasBtn">Editar Horas Trabajadoras</button>
             <button class="editarExtrasBtn">Editar Extras</button>
-            <button class="completadoBtn ${registro.completado ? 'completado' : ''}">Hecho</button>
+            <button class="anotacionesBtn">Anotaciones</button>
             <button class="volverBtn">Volver al Piso</button>
+            <button class="completadoBtn ${registro.completado ? 'completado' : ''}">Hecho</button>
         `;
         
         // Si está completado, añadir clase a todo el registro
@@ -447,6 +485,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const editarTrabajadorasBtn = div.querySelector('.editarTrabajadorasBtn');
         editarTrabajadorasBtn.addEventListener('click', function () {
             editarHorasTrabajadoras(registro, div);
+        });
+        
+        const anotacionesBtn = div.querySelector('.anotacionesBtn');
+        anotacionesBtn.addEventListener('click', function () {
+            editarAnotaciones(registro, div);
         });
         
         const completadoBtn = div.querySelector('.completadoBtn');
@@ -484,14 +527,146 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function editarExtras(registro, div) {
-        const extras = registro.extras.join(", ");
-        const nuevosExtras = window.prompt('Editar Extras:', extras);
-
-        if (nuevosExtras !== null) {
-            registro.extras = nuevosExtras.split(',').map(extra => extra.trim());
-            actualizarRegistro(registro);
-            actualizarVistaRegistro(div, registro);
+        // Verificar si ya existe un formulario de edición en este div
+        const existingForm = div.querySelector('.form-editar-extras');
+        if (existingForm) {
+            // Si ya existe un formulario, lo eliminamos (toggle)
+            div.removeChild(existingForm);
+            return;
         }
+
+        // Lista de extras disponibles
+        const extrasDisponibles = [
+            'Agua', 
+            'Vino Blanco', 
+            'Vino Rosado', 
+            'Vino Tinto', 
+            'Caja de bombones naranja', 
+            'Caja de bombones nestle', 
+            'Bombones sueltos', 
+            'Kitkat'
+        ];
+        
+        // Obtener los extras actuales del registro
+        const extrasActuales = registro.extras || [];
+        
+        // Crear el contenedor del formulario inline
+        const formContainer = document.createElement('div');
+        formContainer.classList.add('form-editar-extras');
+        formContainer.style.backgroundColor = '#f9f9f9';
+        formContainer.style.padding = '15px';
+        formContainer.style.borderRadius = '8px';
+        formContainer.style.marginTop = '15px';
+        formContainer.style.marginBottom = '15px';
+        formContainer.style.border = '1px solid #ddd';
+
+        // Título del formulario
+        const titulo = document.createElement('h4');
+        titulo.textContent = 'Editar Extras';
+        titulo.style.marginTop = '0';
+        titulo.style.marginBottom = '10px';
+        titulo.style.color = '#2c3e50';
+        formContainer.appendChild(titulo);
+
+        // Crear formulario para los extras
+        const form = document.createElement('form');
+        form.id = 'formExtras-' + Date.now(); // ID único para evitar conflictos
+        
+        // Crear un contenedor para los checkboxes con estilo grid
+        const extrasGrid = document.createElement('div');
+        extrasGrid.style.display = 'grid';
+        extrasGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(200px, 1fr))';
+        extrasGrid.style.gap = '10px';
+        
+        // Crear campos para cada extra
+        extrasDisponibles.forEach(extra => {
+            const extraDiv = document.createElement('div');
+            extraDiv.style.marginBottom = '10px';
+            
+            const label = document.createElement('label');
+            label.style.display = 'flex';
+            label.style.alignItems = 'center';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = 'extra';
+            checkbox.value = extra;
+            checkbox.id = `extra-${extra.replace(/\s+/g, '-')}-${Date.now()}`; // ID único
+            checkbox.checked = extrasActuales.includes(extra);
+            checkbox.style.marginRight = '8px';
+            
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(extra));
+            
+            extraDiv.appendChild(label);
+            extrasGrid.appendChild(extraDiv);
+        });
+        
+        form.appendChild(extrasGrid);
+        
+        // Botones de acción
+        const botonesDiv = document.createElement('div');
+        botonesDiv.style.display = 'flex';
+        botonesDiv.style.justifyContent = 'flex-end';
+        botonesDiv.style.gap = '10px';
+        botonesDiv.style.marginTop = '15px';
+
+        const cancelarBtn = document.createElement('button');
+        cancelarBtn.textContent = 'Cancelar';
+        cancelarBtn.type = 'button';
+        cancelarBtn.style.padding = '8px 15px';
+        cancelarBtn.style.backgroundColor = '#6c757d';
+        cancelarBtn.style.color = 'white';
+        cancelarBtn.style.border = 'none';
+        cancelarBtn.style.borderRadius = '5px';
+        cancelarBtn.style.cursor = 'pointer';
+
+        const guardarBtn = document.createElement('button');
+        guardarBtn.textContent = 'Guardar';
+        guardarBtn.type = 'button';
+        guardarBtn.style.padding = '8px 15px';
+        guardarBtn.style.backgroundColor = '#EE1C25';
+        guardarBtn.style.color = 'white';
+        guardarBtn.style.border = 'none';
+        guardarBtn.style.borderRadius = '5px';
+        guardarBtn.style.cursor = 'pointer';
+
+        botonesDiv.appendChild(cancelarBtn);
+        botonesDiv.appendChild(guardarBtn);
+
+        form.appendChild(botonesDiv);
+        formContainer.appendChild(form);
+        
+        // Insertar el formulario después del último botón en el div del registro
+        div.appendChild(formContainer);
+
+        // Evento para cerrar el formulario
+        cancelarBtn.addEventListener('click', function() {
+            div.removeChild(formContainer);
+        });
+
+        // Evento para guardar los cambios
+        guardarBtn.addEventListener('click', function() {
+            const extrasSeleccionados = [];
+            
+            // Recoger todos los extras seleccionados
+            const checkboxes = form.querySelectorAll('input[name="extra"]:checked');
+            checkboxes.forEach(checkbox => {
+                extrasSeleccionados.push(checkbox.value);
+            });
+            
+            // Actualizar el registro con los nuevos extras
+            registro.extras = extrasSeleccionados;
+            
+            // Actualizar el registro en localStorage
+            actualizarRegistro(registro);
+            
+            // Actualizar la vista del registro específico
+            actualizarVistaRegistro(div, registro);
+            
+            // Eliminar el formulario
+            div.removeChild(formContainer);
+        });
     }
 
     function borrarRegistro(registro) {
@@ -549,6 +724,37 @@ document.addEventListener('DOMContentLoaded', function () {
                 div.removeChild(trabajadorasDiv);
             }
         }
+        
+        // Actualizar la lista de extras
+        const extrasP = div.querySelector('p:nth-child(5)');
+        if (extrasP) {
+            extrasP.innerHTML = `<strong>Extras:</strong> ${registro.extras.join(", ")}`;
+        }
+        
+        // Actualizar o añadir las anotaciones
+        let anotacionesP = Array.from(div.querySelectorAll('p')).find(p => p.textContent.startsWith('Anotaciones:'));
+        
+        if (registro.anotaciones && registro.anotaciones.trim() !== '') {
+            if (anotacionesP) {
+                // Actualizar el párrafo existente
+                anotacionesP.innerHTML = `<strong>Anotaciones:</strong> ${registro.anotaciones}`;
+            } else {
+                // Crear un nuevo párrafo para las anotaciones
+                anotacionesP = document.createElement('p');
+                anotacionesP.innerHTML = `<strong>Anotaciones:</strong> ${registro.anotaciones}`;
+                
+                // Insertar antes de los botones
+                const primerBoton = div.querySelector('button');
+                if (primerBoton) {
+                    div.insertBefore(anotacionesP, primerBoton);
+                } else {
+                    div.appendChild(anotacionesP);
+                }
+            }
+        } else if (anotacionesP) {
+            // Si no hay anotaciones pero existe el párrafo, eliminarlo
+            div.removeChild(anotacionesP);
+        }
     }
     
     /**
@@ -556,6 +762,114 @@ document.addEventListener('DOMContentLoaded', function () {
      * @param {Object} registro - El registro de la vivienda
      * @param {HTMLElement} div - El elemento HTML del registro
      */
+    function editarAnotaciones(registro, div) {
+        // Verificar si ya existe un formulario de edición en este div
+        const existingForm = div.querySelector('.form-editar-anotaciones');
+        if (existingForm) {
+            // Si ya existe un formulario, lo eliminamos (toggle)
+            div.removeChild(existingForm);
+            return;
+        }
+        
+        // Crear el contenedor del formulario inline
+        const formContainer = document.createElement('div');
+        formContainer.classList.add('form-editar-anotaciones');
+        formContainer.style.backgroundColor = '#f9f9f9';
+        formContainer.style.padding = '15px';
+        formContainer.style.borderRadius = '8px';
+        formContainer.style.marginTop = '15px';
+        formContainer.style.marginBottom = '15px';
+        formContainer.style.border = '1px solid #ddd';
+
+        // Título del formulario
+        const titulo = document.createElement('h4');
+        titulo.textContent = 'Anotaciones';
+        titulo.style.marginTop = '0';
+        titulo.style.marginBottom = '10px';
+        titulo.style.color = '#2c3e50';
+        formContainer.appendChild(titulo);
+
+        // Crear formulario para las anotaciones
+        const form = document.createElement('form');
+        form.id = 'formAnotaciones-' + Date.now(); // ID único para evitar conflictos
+        
+        // Crear textarea para las anotaciones
+        const textareaDiv = document.createElement('div');
+        textareaDiv.style.marginBottom = '15px';
+        
+        const textarea = document.createElement('textarea');
+        textarea.name = 'anotaciones';
+        textarea.placeholder = 'Escriba aquí sus anotaciones...';
+        textarea.value = registro.anotaciones || '';
+        textarea.style.width = '100%';
+        textarea.style.minHeight = '100px';
+        textarea.style.padding = '10px';
+        textarea.style.border = '1px solid #ddd';
+        textarea.style.borderRadius = '4px';
+        textarea.style.resize = 'vertical';
+        
+        textareaDiv.appendChild(textarea);
+        form.appendChild(textareaDiv);
+        
+        // Botones de acción
+        const botonesDiv = document.createElement('div');
+        botonesDiv.style.display = 'flex';
+        botonesDiv.style.justifyContent = 'flex-end';
+        botonesDiv.style.gap = '10px';
+
+        const cancelarBtn = document.createElement('button');
+        cancelarBtn.textContent = 'Cancelar';
+        cancelarBtn.type = 'button';
+        cancelarBtn.style.padding = '8px 15px';
+        cancelarBtn.style.backgroundColor = '#6c757d';
+        cancelarBtn.style.color = 'white';
+        cancelarBtn.style.border = 'none';
+        cancelarBtn.style.borderRadius = '5px';
+        cancelarBtn.style.cursor = 'pointer';
+
+        const guardarBtn = document.createElement('button');
+        guardarBtn.textContent = 'Guardar';
+        guardarBtn.type = 'button';
+        guardarBtn.style.padding = '8px 15px';
+        guardarBtn.style.backgroundColor = '#EE1C25';
+        guardarBtn.style.color = 'white';
+        guardarBtn.style.border = 'none';
+        guardarBtn.style.borderRadius = '5px';
+        guardarBtn.style.cursor = 'pointer';
+
+        botonesDiv.appendChild(cancelarBtn);
+        botonesDiv.appendChild(guardarBtn);
+
+        form.appendChild(botonesDiv);
+        formContainer.appendChild(form);
+        
+        // Insertar el formulario después del último botón en el div del registro
+        div.appendChild(formContainer);
+
+        // Evento para cerrar el formulario
+        cancelarBtn.addEventListener('click', function() {
+            div.removeChild(formContainer);
+        });
+
+        // Evento para guardar los cambios
+        guardarBtn.addEventListener('click', function() {
+            // Obtener el texto de las anotaciones
+            const anotaciones = textarea.value.trim();
+            
+            // Actualizar el registro con las nuevas anotaciones
+            registro.anotaciones = anotaciones;
+            
+            // Actualizar el registro en localStorage
+            actualizarRegistro(registro);
+            
+            // Actualizar la vista del registro específico
+            actualizarVistaRegistro(div, registro);
+            
+            // Eliminar el formulario
+            div.removeChild(formContainer);
+        });
+    }
+    
     function editarHorasTrabajadoras(registro, div) {
         // Verificar si ya existe un formulario de edición en este div
         const existingForm = div.querySelector('.form-editar-trabajadoras');
@@ -763,7 +1077,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function descargarCSV() {
         let csvContent = "\uFEFF"; // BOM para UTF-8
-        csvContent += "Vivienda;Fecha Entrada;Hora Entrada;Fecha Salida;Hora Salida;Horas Limpieza;Trabajadoras;Extras\r\n";
+        csvContent += "Vivienda;Fecha Entrada;Hora Entrada;Fecha Salida;Hora Salida;Horas Limpieza;Trabajadoras;Extras;Anotaciones\r\n";
         registros.forEach(function (registro) {
             // Formatear la información de trabajadoras
             let trabajadorasInfo = '';
@@ -779,7 +1093,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 registro.horaSalida || '',
                 registro.horasLimpiadora,
                 trabajadorasInfo,
-                registro.extras.join(", ")
+                registro.extras.join(", "),
+                registro.anotaciones || ''
             ].map(field => `"${field}"`).join(";");
             csvContent += row + "\r\n";
         });
