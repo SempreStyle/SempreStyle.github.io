@@ -10,6 +10,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const navLinks = document.querySelector('.nav-links');
     let registros = JSON.parse(localStorage.getItem('registrosViviendas')) || [];
     
+    // Registrar el Service Worker para notificaciones
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+        registerServiceWorker();
+    }
+    
     // Función para manejar el menú móvil
     menuToggle.addEventListener('click', function() {
         menuToggle.classList.toggle('active');
@@ -23,6 +28,98 @@ document.addEventListener('DOMContentLoaded', function () {
             navLinks.classList.remove('active');
         });
     });
+
+    // Función para registrar el Service Worker
+    async function registerServiceWorker() {
+        try {
+            const registration = await navigator.serviceWorker.register('service-worker.js');
+            console.log('Service Worker registrado con éxito:', registration);
+            
+            // Solicitar permiso para notificaciones
+            requestNotificationPermission();
+            
+        } catch (error) {
+            console.error('Error al registrar el Service Worker:', error);
+        }
+    }
+    
+    // Función para solicitar permiso de notificaciones
+    async function requestNotificationPermission() {
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                console.log('Permiso de notificación concedido');
+                // Verificar si hay propiedades para hoy y enviar notificación
+                checkAndNotifyTodayProperties();
+            } else {
+                console.log('Permiso de notificación denegado');
+            }
+        } catch (error) {
+            console.error('Error al solicitar permiso de notificación:', error);
+        }
+    }
+    
+    // Función para verificar y notificar sobre propiedades de hoy
+    function checkAndNotifyTodayProperties() {
+        const hoy = new Date();
+        let propiedadesHoy = [];
+        
+        registros.forEach(registro => {
+            const entradaDate = new Date(registro.fechaEntrada);
+            const salidaDate = new Date(registro.fechaSalida);
+            
+            if (entradaDate.toDateString() === hoy.toDateString()) {
+                propiedadesHoy.push({
+                    tipo: 'entrada',
+                    vivienda: registro.vivienda,
+                    hora: registro.horaEntrada || 'No especificada'
+                });
+            }
+            
+            if (salidaDate.toDateString() === hoy.toDateString()) {
+                propiedadesHoy.push({
+                    tipo: 'salida',
+                    vivienda: registro.vivienda,
+                    hora: registro.horaSalida || 'No especificada'
+                });
+            }
+        });
+        
+        if (propiedadesHoy.length > 0) {
+            sendNotification(propiedadesHoy);
+        }
+    }
+    
+    // Función para enviar notificaciones
+    function sendNotification(propiedades) {
+        if (Notification.permission === 'granted') {
+            // Crear mensaje para la notificación
+            let title = `${propiedades.length} propiedad(es) para hoy`;
+            let body = propiedades.map(p => 
+                `${p.vivienda} (${p.tipo} a las ${p.hora})`
+            ).join('\n');
+            
+            // Verificar si el Service Worker está activo
+            if (navigator.serviceWorker.controller) {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.showNotification(title, {
+                        body: body,
+                        icon: '/icon.png',  // Puedes añadir un icono personalizado
+                        badge: '/badge.png', // Puedes añadir un badge personalizado
+                        vibrate: [100, 50, 100],
+                        tag: 'vivienda-notification',
+                        data: { propiedades: propiedades },
+                        actions: [
+                            { action: 'view', title: 'Ver propiedades' }
+                        ]
+                    });
+                });
+            } else {
+                // Fallback para navegadores que no soportan Service Workers
+                new Notification(title, { body: body });
+            }
+        }
+    }
 
     function mostrarViviendas() {
         const hoy = new Date();
@@ -128,9 +225,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const titulo = document.createElement('h3');
             titulo.textContent = fecha;
+            titulo.classList.add('fecha-titulo');
+            titulo.style.cursor = 'pointer';
+            
+            // Añadir indicador visual de expansión
+            const indicador = document.createElement('span');
+            indicador.textContent = ' ▼';
+            indicador.classList.add('indicador-expansion');
+            titulo.appendChild(indicador);
 
             const contenido = document.createElement('div');
             contenido.classList.add('contenido');
+            // Inicialmente ocultar el contenido
+            contenido.style.display = 'none';
 
             registrosPorFecha.forEach(registro => {
                 const entrada = document.createElement('div');
@@ -208,6 +315,18 @@ document.addEventListener('DOMContentLoaded', function () {
             grupo.appendChild(titulo);
             grupo.appendChild(contenido);
             historialRegistros.appendChild(grupo);
+            
+            // Añadir evento de clic al título para mostrar/ocultar el contenido
+            titulo.addEventListener('click', function() {
+                // Toggle para mostrar u ocultar el contenido
+                if (contenido.style.display === 'none') {
+                    contenido.style.display = 'block';
+                    indicador.textContent = ' ▲';
+                } else {
+                    contenido.style.display = 'none';
+                    indicador.textContent = ' ▼';
+                }
+            });
         });
     }
 
