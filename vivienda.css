@@ -505,9 +505,9 @@ button:active {
 }
 
 /* Botón de descarga CSV */
-#btnDescargarCSV {
-    background-color: #3182ce;
-    color: #FFFFFF;
+#btnDescargarCSV, #btnDescargarCSVPerlas {
+    background-color: var(--button-bg);
+    color: var(--button-text);
     padding: 15px 30px;
     text-align: center;
     display: block;
@@ -523,13 +523,13 @@ button:active {
     max-width: 250px;
 }
 
-#btnDescargarCSV:hover {
-    background-color: #2b6cb0;
+#btnDescargarCSV:hover, #btnDescargarCSVPerlas:hover {
+    background-color: var(--button-hover);
     transform: translateY(-2px);
     box-shadow: 0 6px 8px rgba(49, 130, 206, 0.2);
 }
 
-#btnDescargarCSV:active {
+#btnDescargarCSV:active, #btnDescargarCSVPerlas:active {
     transform: translateY(0);
     box-shadow: 0 2px 4px rgba(49, 130, 206, 0.2);
 }

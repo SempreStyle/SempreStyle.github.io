@@ -2234,6 +2234,63 @@ document.addEventListener('DOMContentLoaded', function () {
 
     btnDescargarCSV.addEventListener('click', descargarCSV);
     
+    // Añadir evento al botón de descargar CSV para Las Perlas
+    const btnDescargarCSVPerlas = document.getElementById('btnDescargarCSVPerlas');
+    btnDescargarCSVPerlas.addEventListener('click', descargarCSVPerlas);
+    
+    /**
+     * Descarga un CSV específico para las propiedades de Las Perlas
+     * - Ordenado por fecha de salida
+     * - Sin horas de entrada/salida
+     * - Con cálculo de días ocupados
+     */
+    function descargarCSVPerlas() {
+        // Filtrar solo las propiedades que contienen "perla" en su nombre (case insensitive)
+        const registrosPerlas = registros.filter(registro => 
+            registro.vivienda.toLowerCase().includes('perla'));
+        
+        // Ordenar por fecha de salida
+        registrosPerlas.sort((a, b) => {
+            const fechaSalidaA = a.fechaSalida ? new Date(a.fechaSalida) : new Date(0);
+            const fechaSalidaB = b.fechaSalida ? new Date(b.fechaSalida) : new Date(0);
+            return fechaSalidaA - fechaSalidaB;
+        });
+        
+        let csvContent = "\uFEFF"; // BOM para UTF-8
+        csvContent += "Vivienda;Fecha Entrada;Fecha Salida;Días Ocupados;Horas Limpieza;Extras\r\n";
+        
+        registrosPerlas.forEach(function (registro) {
+            // Calcular días ocupados
+            let diasOcupados = 0;
+            if (registro.fechaEntrada && registro.fechaSalida) {
+                const fechaEntrada = new Date(registro.fechaEntrada);
+                const fechaSalida = new Date(registro.fechaSalida);
+                const diferenciaTiempo = fechaSalida.getTime() - fechaEntrada.getTime();
+                diasOcupados = Math.ceil(diferenciaTiempo / (1000 * 3600 * 24));
+            }
+            
+            let row = [
+                registro.vivienda,
+                registro.fechaEntrada || '',
+                registro.fechaSalida || '',
+                diasOcupados,
+                registro.horasLimpiadora,
+                registro.extras.join(", ")
+            ].map(field => `"${field}"`).join(";");
+            
+            csvContent += row + "\r\n";
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "registros_perlas.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    
     /**
      * Muestra un formulario para editar la fecha y hora de entrada
      * @param {Object} registro - El registro de la vivienda
