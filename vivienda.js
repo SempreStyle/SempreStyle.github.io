@@ -2259,6 +2259,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let csvContent = "\uFEFF"; // BOM para UTF-8
         csvContent += "Vivienda;Fecha Entrada;Fecha Salida;Días Ocupados;Horas Limpieza;Extras\r\n";
         
+        let horasTotales = 0;
         registrosPerlas.forEach(function (registro) {
             // Calcular días ocupados
             let diasOcupados = 0;
@@ -2268,6 +2269,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 const diferenciaTiempo = fechaSalida.getTime() - fechaEntrada.getTime();
                 diasOcupados = Math.ceil(diferenciaTiempo / (1000 * 3600 * 24));
             }
+            
+            // Sumar las horas de limpieza
+            horasTotales += registro.horasLimpiadora || 0;
             
             let row = [
                 registro.vivienda,
@@ -2280,6 +2284,9 @@ document.addEventListener('DOMContentLoaded', function () {
             
             csvContent += row + "\r\n";
         });
+        
+        // Añadir fila con el total de horas
+        csvContent += `"TOTAL HORAS";"";"";"";"${horasTotales}";"";\r\n`;
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
