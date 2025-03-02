@@ -5,6 +5,7 @@ const pdfjsLib = window['pdfjs-dist/build/pdf'];
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 pdfjsLib.GlobalWorkerOptions.disableAutoFetch = true;
 pdfjsLib.GlobalWorkerOptions.disableStream = true;
+pdfjsLib.GlobalWorkerOptions.verbosity = pdfjsLib.VerbosityLevel.ERRORS;
 
 // Helper function to format dates consistently
 function formatDate(dateStr) {
@@ -41,8 +42,14 @@ window.handlePDFUpload = async function(file) {
             console.warn('Running on GitHub Pages - some features may be limited');
         }
         
+        // Verify PDF.js is available
+        if (typeof pdfjsLib === 'undefined') {
+            throw new Error('PDF.js library not loaded correctly. Please refresh the page and try again.');
+        }
+        
+        // Load and process the PDF file
         const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer, verbosity: pdfjsLib.VerbosityLevel.ERRORS }).promise;
         console.log(`PDF loaded successfully with ${pdf.numPages} pages`);
         
         const result = await extractPropertyData(pdf);
@@ -87,8 +94,23 @@ window.handlePDFUpload = async function(file) {
     } catch (error) {
         console.error('Error processing PDF:', error);
         
-        // Provide more specific error messages for GitHub Pages
-        if (window.location.hostname.includes('github.io')) {
+        // Provide more specific error messages
+        if (error.name === 'MissingPDFException') {
+            return {
+                success: false,
+                message: 'El archivo no es un PDF válido o está dañado.'
+            };
+        } else if (error.name === 'InvalidPDFException') {
+            return {
+                success: false,
+                message: 'El archivo PDF no es válido o está protegido.'
+            };
+        } else if (error.name === 'PasswordException') {
+            return {
+                success: false,
+                message: 'El archivo PDF está protegido con contraseña.'
+            };
+        } else if (window.location.hostname.includes('github.io')) {
             return { 
                 success: false, 
                 message: 'Error al procesar el PDF en GitHub Pages. Esta funcionalidad puede tener limitaciones en este entorno. Para una experiencia completa, utilice la aplicación localmente.'
