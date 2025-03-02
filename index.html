@@ -122,7 +122,28 @@
     </div>
 
     <!-- El código de JavaScript deberá vincularse aquí -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha512-AfXlbTWxWN4oL0YmxBdRlOu2wHZGxg+m3bv9B6NzgB0LIeQgTI2f+qUfZ8Bw0xHdA0d/rHu7/CcyNLF7qTu9A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        // Check if PDF.js is loaded correctly
+        document.addEventListener('DOMContentLoaded', function() {
+            const pdfUploadSection = document.getElementById('pdf-upload');
+            const uploadStatus = document.getElementById('uploadStatus');
+            
+            // Check if we're on GitHub Pages
+            if (window.location.hostname.includes('github.io')) {
+                // Add a notice about GitHub Pages limitations
+                uploadStatus.innerHTML = '<strong>Nota:</strong> La funcionalidad de carga de PDF puede tener limitaciones en GitHub Pages debido a restricciones de seguridad. Para una experiencia completa, utilice la aplicación localmente.';
+                uploadStatus.style.color = '#ff9800';
+            }
+            
+            // Verify PDF.js is available
+            if (typeof pdfjsLib === 'undefined') {
+                console.error('PDF.js library not loaded correctly');
+                uploadStatus.innerHTML += '<br>Error: La biblioteca PDF.js no se cargó correctamente. Intente recargar la página o use la aplicación localmente.';
+                uploadStatus.style.color = '#dc3545';
+            }
+        });
+    </script>
     <script src="pdf-handler.js"></script>
     <script src="trabajadoras.js"></script>
     <script src="vivienda.js"></script>

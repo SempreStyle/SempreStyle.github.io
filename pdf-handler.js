@@ -3,6 +3,8 @@
 // Import PDF.js library
 const pdfjsLib = window['pdfjs-dist/build/pdf'];
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+pdfjsLib.GlobalWorkerOptions.disableAutoFetch = true;
+pdfjsLib.GlobalWorkerOptions.disableStream = true;
 
 // Helper function to format dates consistently
 function formatDate(dateStr) {
@@ -32,6 +34,13 @@ function formatDate(dateStr) {
 window.handlePDFUpload = async function(file) {
     try {
         console.log('Starting PDF upload process...');
+        
+        // Check if running on GitHub Pages
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        if (isGitHubPages) {
+            console.warn('Running on GitHub Pages - some features may be limited');
+        }
+        
         const arrayBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
         console.log(`PDF loaded successfully with ${pdf.numPages} pages`);
@@ -77,6 +86,15 @@ window.handlePDFUpload = async function(file) {
         }
     } catch (error) {
         console.error('Error processing PDF:', error);
+        
+        // Provide more specific error messages for GitHub Pages
+        if (window.location.hostname.includes('github.io')) {
+            return { 
+                success: false, 
+                message: 'Error al procesar el PDF en GitHub Pages. Esta funcionalidad puede tener limitaciones en este entorno. Para una experiencia completa, utilice la aplicación localmente.'
+            };
+        }
+        
         return { 
             success: false, 
             message: 'Error al procesar el PDF: ' + error.message 
@@ -556,7 +574,7 @@ function parsePropertyText(text) {
         propertyName: /RELACIÓN\s+DE\s+RESERVAS\s+APARTAMENTO\s+([A-Z]-\d+)/i,
         checkIn: /(?:Entrada|Check[\s-]*in|Llegada|Arrival|Fecha[\s-]*de[\s-]*entrada)[:;]?\s*(\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4})/i,
         checkOut: /(?:Salida|Check[\s-]*out|Partida|Departure|Fecha[\s-]*de[\s-]*salida)[:;]?\s*(\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4})/i,
-        extras: /(?:COMENTARIO|Observaciones|Notas|Notes|Comments)[:;]?\s*([^\n\r]+)/i,
+        extras: /(?:COMENTARIO|Observaciones|Notas|Notes)[:;]?\s*([^\n\r]+)/i,
         tableDate: /\b(\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4})\b/g
     };
 
