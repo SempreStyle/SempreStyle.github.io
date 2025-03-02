@@ -150,11 +150,20 @@ window.handlePDFUpload = async function(file) {
             console.warn('Running on GitHub Pages - some features may be limited');
         }
         
+        // Validate file is a PDF
+        if (file.type !== 'application/pdf') {
+            return {
+                success: false,
+                message: 'El archivo seleccionado no es un PDF válido. Por favor, seleccione un archivo PDF.'
+            };
+        }
+        
         // Ensure PDF.js is loaded before proceeding
         try {
             await ensurePDFJSLoaded();
         } catch (loadError) {
-            throw new Error('PDF.js library not loaded correctly. Please refresh the page and try again.');
+            console.error('PDF.js loading error:', loadError);
+            throw new Error('La biblioteca PDF.js no se cargó correctamente. Por favor, actualice la página e intente de nuevo.');
         }
         
         // Load and process the PDF file
@@ -177,8 +186,22 @@ window.handlePDFUpload = async function(file) {
             if (validEntries.length > 0) {
                 try {
                     console.log('Processing entries:', validEntries);
-                    registerProperty(validEntries);
-                    console.log('Entries registered successfully');
+                    const newEntriesCount = registerProperty(validEntries);
+                    console.log(`${newEntriesCount} new entries registered successfully`);
+                    
+                    // If no new entries were added (all were duplicates)
+                    if (newEntriesCount === 0) {
+                        return {
+                            success: true,
+                            message: 'No se han añadido nuevas entradas. Todas las entradas ya existían en el sistema.'
+                        };
+                    }
+                    
+                    const message = `Se han registrado ${newEntriesCount} entradas correctamente${invalidEntries > 0 ? ` (${invalidEntries} entradas no válidas)` : ''}.`;
+                    return { 
+                        success: true,
+                        message: message
+                    };
                 } catch (error) {
                     console.error('Error registering entries:', error);
                     return {
@@ -186,19 +209,17 @@ window.handlePDFUpload = async function(file) {
                         message: 'Error al registrar las entradas: ' + error.message
                     };
                 }
+            } else {
+                return {
+                    success: false,
+                    message: 'No se encontraron fechas válidas en el PDF. Por favor, asegúrese de que el PDF contiene fechas en formato DD/MM/YYYY o DD-MM-YYYY.'
+                };
             }
-            
-            const message = `Se han registrado ${validEntries.length} entradas correctamente${invalidEntries > 0 ? ` (${invalidEntries} entradas no válidas)` : ''}.`;
-            
-            return { 
-                success: true,
-                message: message
-            };
         } else {
             console.warn('No valid entries found in PDF');
             return { 
                 success: false, 
-                message: 'No se pudieron extraer fechas del PDF. Por favor, verifica que el PDF contenga fechas de entrada o salida.'
+                message: 'No se pudieron extraer fechas del PDF. Por favor, verifica que el PDF contenga fechas de entrada o salida en formato DD/MM/YYYY o DD-MM-YYYY.'
             };
         }
     } catch (error) {
@@ -334,15 +355,28 @@ async function extractPropertyData(pdf) {
 // Parse extracted text to find multiple property entries
 function parsePropertyTextMultiple(text) {
     try {
-        // Regular expressions for finding dates and property names
-        const dateRegex = /\b(\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4})\b/g;
+        // Regular expressions for finding dates and property names with improved patterns
+        const dateRegex = /\b(\d{1,2}[\/.-]\d{1,2}[\/.-](?:20)?\d{2})\b/g;
         const propertyRegex = /\b(Estrella del mar|La perla A4|La perla A11|La perla C13|La perla C17|Mar azul|Lago de Mirazul)\b/gi;
+        
+        // Clean and normalize text
+        text = text.replace(/\s+/g, ' ').trim();
         
         // Find all dates in the text
         const dates = [];
         let match;
         while ((match = dateRegex.exec(text)) !== null) {
-            dates.push(match[1]);
+            // Validate date format
+            const dateParts = match[1].split(/[\/.-]/);
+            if (dateParts.length === 3) {
+                const day = parseInt(dateParts[0]);
+                const month = parseInt(dateParts[1]);
+                const year = parseInt(dateParts[2].length === 2 ? '20' + dateParts[2] : dateParts[2]);
+                
+                if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 2024) {
+                    dates.push(match[1]);
+                }
+            }
         }
         
         // Find all property names
