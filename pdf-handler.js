@@ -276,11 +276,20 @@ function registerProperty(dataArray) {
         
         // Filter out duplicates before adding new entries
         const newEntries = dataArray.filter(newEntry => {
-            return !savedRegistros.some(existingEntry => 
-                existingEntry.vivienda === newEntry.vivienda &&
-                existingEntry.fechaEntrada === formatDate(newEntry.fechaEntrada) &&
-                existingEntry.fechaSalida === formatDate(newEntry.fechaSalida)
-            );
+            return !savedRegistros.some(existingEntry => {
+                // Check if it's the same property
+                if (existingEntry.vivienda === newEntry.vivienda) {
+                    // Convert dates to comparable format
+                    const newEntryStart = new Date(formatDate(newEntry.fechaEntrada));
+                    const newEntryEnd = new Date(formatDate(newEntry.fechaSalida));
+                    const existingEntryStart = new Date(existingEntry.fechaEntrada);
+                    const existingEntryEnd = new Date(existingEntry.fechaSalida);
+                    
+                    // Check for date overlap
+                    return (newEntryStart <= existingEntryEnd && newEntryEnd >= existingEntryStart);
+                }
+                return false;
+            });
         });
 
         // Add new entries

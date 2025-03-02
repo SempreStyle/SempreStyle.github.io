@@ -158,7 +158,7 @@
                     <label for="pdfFileInput" class="file-input-label">Seleccionar archivo PDF</label>
                 </div>
                 <div id="uploadStatus" class="upload-status"></div>
-                <button id="acceptPdfButton" style="display: none;" class="volverBtn">Aceptar</button>
+                <button id="acceptPdfButton" style="display: none; margin: 20px auto;" class="volverBtn">Aceptar</button>
             </div>
         </section>
 
@@ -192,11 +192,14 @@
                             window.handlePDFUpload(file).then(result => {
                                 uploadStatus.innerHTML = result.message;
                                 uploadStatus.style.color = result.success ? '#28a745' : '#dc3545';
-                            }).catch(error => {
-                                console.error('Error in PDF upload:', error);
-                                uploadStatus.innerHTML = 'Error al procesar el PDF: ' + error.message;
-                                uploadStatus.style.color = '#dc3545';
-                            });
+                                if (result.success) {
+                                    const acceptButton = document.getElementById('acceptPdfButton');
+                                    acceptButton.style.display = 'block';
+                                    acceptButton.onclick = function() {
+                                        location.reload();
+                                    };
+                                }
+                            })
                         } else {
                             uploadStatus.innerHTML = 'Error: La función de procesamiento de PDF no está disponible. <button id="retryButton" class="retry-button">Intentar de nuevo</button>';
                             uploadStatus.style.color = '#dc3545';
