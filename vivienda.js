@@ -4,20 +4,22 @@ document.addEventListener('DOMContentLoaded', function () {
     const uploadStatus = document.getElementById('uploadStatus');
     
     if (pdfFileInput) {
+        const acceptPdfButton = document.getElementById('acceptPdfButton');
+        
         pdfFileInput.addEventListener('change', async function(event) {
             if (event.target.files.length > 0) {
                 const file = event.target.files[0];
                 uploadStatus.textContent = 'Procesando PDF...';
                 uploadStatus.style.color = '#666';
+                acceptPdfButton.style.display = 'none';
                 
                 try {
                     // Ensure we're accessing the function from the window object
                     const result = await window.handlePDFUpload(file);
                     if (result.success) {
-                        uploadStatus.textContent = '¡PDF procesado con éxito! La vivienda ha sido registrada.';
+                        uploadStatus.textContent = '¡PDF procesado con éxito! Haga clic en Aceptar para registrar la vivienda.';
                         uploadStatus.style.color = '#28a745';
-                        // Actualizar la interfaz
-                        actualizarUI();
+                        acceptPdfButton.style.display = 'inline-block';
                     } else {
                         let errorMessage = result.message;
                         if (result.missingFields) {
@@ -43,6 +45,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Limpiar el input para permitir subir el mismo archivo nuevamente
                 event.target.value = '';
             }
+        });
+
+        // Add click handler for accept button
+        acceptPdfButton.addEventListener('click', function() {
+            // Update UI
+            actualizarUI();
+            // Hide the accept button
+            acceptPdfButton.style.display = 'none';
+            // Clear the status
+            uploadStatus.textContent = '';
         });
     }
 
