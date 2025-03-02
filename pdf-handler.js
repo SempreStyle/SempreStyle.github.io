@@ -293,11 +293,11 @@ function registerProperty(dataArray) {
                 data.fechaSalida = formatDate(data.fechaSalida);
             }
             
-            // Add default values if not present
-            data.horaEntrada = data.horaEntrada || '';
-            data.horaSalida = data.horaSalida || '';
-            data.horasLimpiadora = data.horasLimpiadora || 2;
-            data.extras = data.extras || [];
+            // Set default values, but don't set default cleaning hours
+            data.horaEntrada = '';
+            data.horaSalida = '';
+            data.horasLimpiadora = 0; // Set to 0 instead of default 2
+            data.extras = [];
             
             savedRegistros.push(data);
         });
@@ -333,6 +333,7 @@ function registerProperty(dataArray) {
 async function extractPropertyData(pdf) {
     try {
         let allText = '';
+        let propertyName = '';
         
         // Extract text from all pages
         for (let i = 1; i <= pdf.numPages; i++) {
@@ -340,12 +341,38 @@ async function extractPropertyData(pdf) {
             const textContent = await page.getTextContent();
             const pageText = textContent.items.map(item => item.str).join(' ');
             allText += pageText + '\n';
+            
+            // Try to find property name in the header
+            const headerMatch = pageText.match(/RELACIÓN DE RESERVAS APARTAMENTO ([A-Z]-?\d+|[A-Z]\d+|[A-Z]-[A-Z]\d+|[A-Z0-9-]+)/i);
+            if (headerMatch && !propertyName) {
+                // Format the property name correctly based on the identifier
+                const identifier = headerMatch[1];
+                // Check if it's already a complete name
+                if (identifier.toLowerCase().startsWith('estrella') || 
+                    identifier.toLowerCase().startsWith('mar azul') || 
+                    identifier.toLowerCase().startsWith('lago')) {
+                    propertyName = identifier;
+                } else {
+                    // It's a La Perla apartment
+                    propertyName = `La perla ${identifier}`;
+                }
+            }
         }
         
         console.log('Extracted text from PDF:', allText.substring(0, 200) + '...');
+        console.log('Found property name:', propertyName);
         
         // Try to parse the text to find property information
-        return parsePropertyTextMultiple(allText);
+        const result = parsePropertyTextMultiple(allText);
+        
+        // Add the property name to each entry if found
+        if (propertyName && result.success && Array.isArray(result.data)) {
+            result.data.forEach(entry => {
+                entry.vivienda = propertyName;
+            });
+        }
+        
+        return result;
     } catch (error) {
         console.error('Error extracting property data:', error);
         throw error;

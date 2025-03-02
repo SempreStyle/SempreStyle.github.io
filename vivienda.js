@@ -375,18 +375,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 
                 entrada.innerHTML = `
-                    <p><strong>Vivienda:</strong> ${registro.vivienda}</p>
-                    <p><strong>Entrada:</strong> ${registro.fechaEntrada ? `${registro.fechaEntrada} a las ${registro.horaEntrada || ''}` : 'N/A'}</p>
-                    <p><strong>Salida:</strong> ${registro.fechaSalida ? `${registro.fechaSalida} a las ${registro.horaSalida || ''}` : 'N/A'}</p>
+                    <h3 style="font-size: 1.2em; color: var(--heading-color, #EE1C25); margin-top: 0; margin-bottom: 10px;">${registro.vivienda}</h3>
+                    <p><strong>Entrada:</strong> ${registro.fechaEntrada ? `${formatDateToDisplay(registro.fechaEntrada)} a las ${registro.horaEntrada || ''}` : 'N/A'}</p>
+                    <p><strong>Salida:</strong> ${registro.fechaSalida ? `${formatDateToDisplay(registro.fechaSalida)} a las ${registro.horaSalida || ''}` : 'N/A'}</p>
+                    ${registro.fechaEntrada && registro.fechaSalida ? `<p><strong>Duración Total:</strong> ${Math.ceil((new Date(registro.fechaSalida) - new Date(registro.fechaEntrada)) / (1000 * 60 * 60 * 24) + 1)} días</p>` : ''}
                     <p><strong>Horas de Limpieza Total:</strong> ${registro.horasLimpiadora}</p>
+                    <p><strong>Número de Huéspedes:</strong> ${registro.numHuespedes || 'No especificado'}</p>
                     ${trabajadorasHTML}
                     <p><strong>Extras:</strong> ${registro.extras.join(", ")}</p>
                     ${registro.anotaciones ? `<p><strong>Anotaciones:</strong> ${registro.anotaciones}</p>` : ''}
                     <button class="borrarBtn">Borrar</button>
                     <button class="editarEntradaBtn">Editar Entrada</button>
                     <button class="editarSalidaBtn">Editar Salida</button>
-                    <button class="editarTrabajadorasBtn">Editar Horas Trabajadoras</button>
                     <button class="editarExtrasBtn">Editar Extras</button>
+                    <button class="editarTrabajadorasBtn">Editar Horas Trabajadoras</button>
+                    <button class="editarHuespedesBtn">Editar Huéspedes</button>
                     <button class="anotacionesBtn">Anotaciones</button>
                     <button class="volverBtn">Volver al Piso</button>
                     <button class="completadoBtn ${registro.completado ? 'completado' : ''}">Hecho</button>
@@ -429,6 +432,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 const anotacionesBtn = entrada.querySelector('.anotacionesBtn');
                 anotacionesBtn.addEventListener('click', function () {
                     editarAnotaciones(registro, entrada);
+                });
+                
+                const editarHuespedesBtn = entrada.querySelector('.editarHuespedesBtn');
+                editarHuespedesBtn.addEventListener('click', function () {
+                    editarHuespedes(registro, entrada);
                 });
                 
                 const completadoBtn = entrada.querySelector('.completadoBtn');
@@ -492,7 +500,16 @@ document.addEventListener('DOMContentLoaded', function () {
         const mes = fecha.getMonth() + 1; // Meses en JavaScript son de 0 a 11
         const año = fecha.getFullYear();
 
-        return `${año}-${mes < 10 ? '0' : ''}${mes}-${dia < 10 ? '0' : ''}${dia}`;
+        return `${dia < 10 ? '0' : ''}${dia}/${mes < 10 ? '0' : ''}${mes}/${año}`;
+    }
+    
+    function formatDateToDisplay(dateStr) {
+        // Convert from YYYY-MM-DD to DD/MM/YYYY
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        return dateStr;
     }
 
     registroForm.addEventListener('submit', function (event) {
@@ -865,9 +882,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         
         div.innerHTML = `
-            <p><strong>Vivienda:</strong> ${registro.vivienda}</p>
+            <h3 style="font-size: 1.2em; color: #EE1C25; margin-top: 0; margin-bottom: 10px;">${registro.vivienda}</h3>
             <p><strong>Entrada:</strong> ${registro.fechaEntrada ? `${registro.fechaEntrada} a las ${registro.horaEntrada || ''}` : 'N/A'}</p>
             <p><strong>Salida:</strong> ${registro.fechaSalida ? `${registro.fechaSalida} a las ${registro.horaSalida || ''}` : 'N/A'}</p>
+            ${registro.fechaEntrada && registro.fechaSalida ? `<p><strong>Duración Total:</strong> ${Math.ceil((new Date(registro.fechaSalida) - new Date(registro.fechaEntrada)) / (1000 * 60 * 60 * 24) + 1)} días</p>` : ''}
             <p><strong>Horas de Limpieza Total:</strong> ${registro.horasLimpiadora}</p>
             ${trabajadorasHTML}
             <p><strong>Extras:</strong> ${registro.extras.join(", ")}</p>
@@ -1753,7 +1771,136 @@ document.addEventListener('DOMContentLoaded', function () {
     actualizarUI();
     }
 
-    function actualizarVistaRegistro(div, registro) {
+    function editarHuespedes(registro, div) {
+    // Guardar la posición actual de scroll
+    const scrollPosition = window.scrollY;
+    
+    // Verificar si ya existe un formulario de edición en este div
+    const existingForm = div.querySelector('.form-editar-huespedes');
+    if (existingForm) {
+        // Si ya existe un formulario, lo eliminamos (toggle)
+        div.removeChild(existingForm);
+        return;
+    }
+    
+    // Crear el contenedor del formulario inline
+    const formContainer = document.createElement('div');
+    formContainer.classList.add('form-editar-huespedes');
+    formContainer.style.backgroundColor = '#f9f9f9';
+    formContainer.style.padding = '15px';
+    formContainer.style.borderRadius = '8px';
+    formContainer.style.marginTop = '15px';
+    formContainer.style.marginBottom = '15px';
+    formContainer.style.border = '1px solid #ddd';
+
+    // Título del formulario
+    const titulo = document.createElement('h4');
+    titulo.textContent = 'Editar Número de Huéspedes';
+    titulo.style.marginTop = '0';
+    titulo.style.marginBottom = '10px';
+    titulo.style.color = '#2c3e50';
+    formContainer.appendChild(titulo);
+
+    // Crear formulario para el número de huéspedes
+    const form = document.createElement('form');
+    form.id = 'formHuespedes-' + Date.now(); // ID único para evitar conflictos
+    
+    // Campo para el número de huéspedes
+    const huespedesDiv = document.createElement('div');
+    huespedesDiv.style.marginBottom = '15px';
+    
+    const huespedesLabel = document.createElement('label');
+    huespedesLabel.textContent = 'Número de Huéspedes:';
+    huespedesLabel.style.display = 'block';
+    huespedesLabel.style.marginBottom = '5px';
+    
+    const huespedesInput = document.createElement('input');
+    huespedesInput.type = 'number';
+    huespedesInput.name = 'numHuespedes';
+    huespedesInput.value = registro.numHuespedes || '';
+    huespedesInput.min = '0';
+    huespedesInput.style.width = '100%';
+    huespedesInput.style.padding = '8px';
+    huespedesInput.style.border = '1px solid #ddd';
+    huespedesInput.style.borderRadius = '4px';
+    
+    huespedesDiv.appendChild(huespedesLabel);
+    huespedesDiv.appendChild(huespedesInput);
+    form.appendChild(huespedesDiv);
+    
+    // Botones de acción
+    const botonesDiv = document.createElement('div');
+    botonesDiv.style.display = 'flex';
+    botonesDiv.style.justifyContent = 'flex-end';
+    botonesDiv.style.gap = '10px';
+    botonesDiv.style.marginTop = '15px';
+
+    const cancelarBtn = document.createElement('button');
+    cancelarBtn.textContent = 'Cancelar';
+    cancelarBtn.type = 'button';
+    cancelarBtn.style.padding = '8px 15px';
+    cancelarBtn.style.backgroundColor = '#6c757d';
+    cancelarBtn.style.color = 'white';
+    cancelarBtn.style.border = 'none';
+    cancelarBtn.style.borderRadius = '5px';
+    cancelarBtn.style.cursor = 'pointer';
+
+    const guardarBtn = document.createElement('button');
+    guardarBtn.textContent = 'Guardar';
+    guardarBtn.type = 'button';
+    guardarBtn.style.padding = '8px 15px';
+    guardarBtn.style.backgroundColor = '#EE1C25';
+    guardarBtn.style.color = 'white';
+    guardarBtn.style.border = 'none';
+    guardarBtn.style.borderRadius = '5px';
+    guardarBtn.style.cursor = 'pointer';
+
+    botonesDiv.appendChild(cancelarBtn);
+    botonesDiv.appendChild(guardarBtn);
+
+    form.appendChild(botonesDiv);
+    formContainer.appendChild(form);
+    
+    // Insertar el formulario después del último botón en el div del registro
+    div.appendChild(formContainer);
+
+    // Evento para cerrar el formulario
+    cancelarBtn.addEventListener('click', function() {
+        div.removeChild(formContainer);
+        
+        // Restaurar la posición de scroll al cancelar
+        window.scrollTo({
+            top: scrollPosition,
+            behavior: 'auto'
+        });
+    });
+
+    // Evento para guardar los cambios
+    guardarBtn.addEventListener('click', function() {
+        // Obtener el valor del número de huéspedes
+        const numHuespedes = huespedesInput.value;
+        
+        // Actualizar el registro con el nuevo valor
+        registro.numHuespedes = numHuespedes;
+        
+        // Actualizar el registro en localStorage
+        actualizarRegistro(registro);
+        
+        // Actualizar la vista del registro específico
+        actualizarVistaRegistro(div, registro);
+        
+        // Eliminar el formulario
+        div.removeChild(formContainer);
+        
+        // Restaurar la posición de scroll
+        window.scrollTo({
+            top: scrollPosition,
+            behavior: 'auto'
+        });
+    });
+}
+
+function actualizarVistaRegistro(div, registro) {
         // Actualizar las horas totales de limpieza
         const horasLimpiezaP = div.querySelector('p:nth-child(4)');
         if (horasLimpiezaP) {
@@ -2734,9 +2881,17 @@ document.addEventListener('DOMContentLoaded', function () {
         let encontrado = false;
         
         registroEnHistorial.forEach(elem => {
-            const vivVienda = elem.querySelector('p:nth-child(1)').textContent;
-            const vivEntrada = elem.querySelector('p:nth-child(2)').textContent;
-            const vivSalida = elem.querySelector('p:nth-child(3)').textContent;
+            // Buscar los elementos necesarios dentro del registro
+            const vivViendaElem = elem.querySelector('h3');
+            const vivEntradaElem = elem.querySelector('p:nth-child(2)');
+            const vivSalidaElem = elem.querySelector('p:nth-child(3)');
+            
+            // Verificar que todos los elementos necesarios existen
+            if (!vivViendaElem || !vivEntradaElem || !vivSalidaElem) return;
+            
+            const vivVienda = vivViendaElem.textContent;
+            const vivEntrada = vivEntradaElem.textContent;
+            const vivSalida = vivSalidaElem.textContent;
             
             // Verificar si este elemento coincide con el registro
             if (vivVienda.includes(registro.vivienda) && 

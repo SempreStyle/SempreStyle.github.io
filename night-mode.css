@@ -18,6 +18,7 @@
     --completed-border: #2f855a;
     --fieldset-bg: #f9f9f9;
     --highlight-color: #fefcbf;
+    --pdf-label-color: #EE1C25;
 }
 
 /* Dark mode variables - Dracula theme inspired */
@@ -33,6 +34,7 @@
     --button-bg: #6272a4;
     --button-hover: #bd93f9;
     --button-text: #f8f8f2;
+    --pdf-label-color: #ff79c6;
     --border-color: rgba(248, 248, 242, 0.1);
     --shadow-color: rgba(0, 0, 0, 0.3);
     --completed-bg: #50fa7b30;

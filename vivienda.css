@@ -536,8 +536,8 @@ button:active {
 
 /* Estilos para el botón de volver al piso */
 .volverBtn {
-    background-color: #3182ce;
-    color: white;
+    background-color: var(--button-bg);
+    color: var(--button-text);
     border: none;
     padding: 8px 15px;
     border-radius: 5px;
@@ -548,13 +548,27 @@ button:active {
 }
 
 .volverBtn:hover {
-    background-color: #2b6cb0;
+    background-color: var(--button-hover);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
+/* Estilo para la etiqueta de selección de PDF */
+#pdfFileInput::file-selector-button {
+    color: var(--pdf-label-color);
+    font-weight: 600;
+}
+
+.file-input-label {
+    color: var(--pdf-label-color);
+    font-weight: 600;
+    display: inline-block;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
 /* Estilos para botones de acción en registros */
-.borrarBtn, .editarTrabajadorasBtn, .editarExtrasBtn, .anotacionesBtn, .editarEntradaBtn, .editarSalidaBtn {
+.borrarBtn, .editarTrabajadorasBtn, .editarExtrasBtn, .anotacionesBtn, .editarEntradaBtn, .editarSalidaBtn, .editarHuespedesBtn {
     padding: 8px 12px;
     margin-right: 8px;
     margin-top: 10px;
@@ -797,8 +811,8 @@ button:active {
 
 /* Estilos para el botón de volver al piso */
 .volverBtn {
-    background-color: #3182ce;
-    color: white;
+    background-color: var(--button-bg);
+    color: var(--button-text);
     border: none;
     padding: 8px 15px;
     border-radius: 5px;
@@ -809,13 +823,27 @@ button:active {
 }
 
 .volverBtn:hover {
-    background-color: #2b6cb0;
+    background-color: var(--button-hover);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
+/* Estilo para la etiqueta de selección de PDF */
+#pdfFileInput::file-selector-button {
+    color: var(--pdf-label-color);
+    font-weight: 600;
+}
+
+.file-input-label {
+    color: var(--pdf-label-color);
+    font-weight: 600;
+    display: inline-block;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
 /* Estilos para botones de acción en registros */
-.borrarBtn, .editarTrabajadorasBtn, .editarExtrasBtn, .anotacionesBtn, .editarEntradaBtn, .editarSalidaBtn {
+.borrarBtn, .editarTrabajadorasBtn, .editarExtrasBtn, .anotacionesBtn, .editarEntradaBtn, .editarSalidaBtn, .editarHuespedesBtn {
     padding: 8px 12px;
     margin-right: 8px;
     margin-top: 10px;

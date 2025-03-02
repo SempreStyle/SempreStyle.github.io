@@ -127,6 +127,9 @@
                 <label for="horasLimpiadora">Horas de Limpieza:</label>
                 <input type="number" id="horasLimpiadora" name="horasLimpiadora" placeholder="Número de horas" min="0" step="0.5">
                 
+                <label for="numHuespedes">Número de Huéspedes:</label>
+                <input type="number" id="numHuespedes" name="numHuespedes" placeholder="Número de huéspedes" min="1" step="1">
+                
                 <fieldset>
                     <legend>Extras</legend>
                     <div class="extras">
@@ -149,7 +152,6 @@
             <h2>Subir PDF de Vivienda</h2>
             <div class="pdf-upload-container">
                 <p>Sube un archivo PDF con la información de la vivienda para registrarla automáticamente.</p>
-                <p class="storage-note" style="color: #666; font-size: 0.9em; margin-top: 10px;">Nota: Los datos se guardan localmente en tu navegador y no se sincronizan entre dispositivos.</p>
                 <div class="file-input-container">
                     <input type="file" id="pdfFileInput" accept=".pdf" class="file-input">
                     <label for="pdfFileInput" class="file-input-label">Seleccionar archivo PDF</label>
