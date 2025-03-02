@@ -253,8 +253,17 @@ function registerProperty(dataArray) {
             }
         }
         
+        // Filter out duplicates before adding new entries
+        const newEntries = dataArray.filter(newEntry => {
+            return !savedRegistros.some(existingEntry => 
+                existingEntry.vivienda === newEntry.vivienda &&
+                existingEntry.fechaEntrada === formatDate(newEntry.fechaEntrada) &&
+                existingEntry.fechaSalida === formatDate(newEntry.fechaSalida)
+            );
+        });
+
         // Add new entries
-        dataArray.forEach(data => {
+        newEntries.forEach(data => {
             // Format dates if they exist
             if (data.fechaEntrada) {
                 data.fechaEntrada = formatDate(data.fechaEntrada);
@@ -292,7 +301,7 @@ function registerProperty(dataArray) {
             mostrarHistorialRegistros();
         }
         
-        return dataArray.length; // Return number of entries added
+        return newEntries.length; // Return number of new entries added
     } catch (error) {
         console.error('Error in registerProperty:', error);
         throw error; // Re-throw to be caught by the caller
@@ -327,7 +336,7 @@ function parsePropertyTextMultiple(text) {
     try {
         // Regular expressions for finding dates and property names
         const dateRegex = /\b(\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4})\b/g;
-        const propertyRegex = /\b(Estrella del mar|La perla A4|La perla A11|La perla C13|La perla C17|Mar azul|Lago de Mirazul)\b/i;
+        const propertyRegex = /\b(Estrella del mar|La perla A4|La perla A11|La perla C13|La perla C17|Mar azul|Lago de Mirazul)\b/gi;
         
         // Find all dates in the text
         const dates = [];
@@ -336,19 +345,39 @@ function parsePropertyTextMultiple(text) {
             dates.push(match[1]);
         }
         
-        // Find property name
-        const propertyMatch = text.match(propertyRegex);
-        const propertyName = propertyMatch ? propertyMatch[1] : 'Vivienda';
+        // Find all property names
+        const properties = [];
+        while ((match = propertyRegex.exec(text)) !== null) {
+            properties.push(match[1]);
+        }
         
-        // If we found at least one date
+        // If we found dates
         if (dates.length > 0) {
+            const entries = [];
+            // Process dates in pairs
+            for (let i = 0; i < dates.length - 1; i += 2) {
+                // Try to find a property name near these dates
+                const propertyName = properties.length > 0 ? properties[Math.floor(i/2) % properties.length] : 'Vivienda';
+                
+                entries.push({
+                    vivienda: propertyName,
+                    fechaEntrada: dates[i],
+                    fechaSalida: dates[i + 1] || ''
+                });
+            }
+            // Handle odd number of dates
+            if (dates.length % 2 !== 0) {
+                const propertyName = properties.length > 0 ? properties[Math.floor((dates.length-1)/2) % properties.length] : 'Vivienda';
+                entries.push({
+                    vivienda: propertyName,
+                    fechaEntrada: dates[dates.length - 1],
+                    fechaSalida: ''
+                });
+            }
+            
             return {
                 success: true,
-                data: {
-                    vivienda: propertyName,
-                    fechaEntrada: dates[0],
-                    fechaSalida: dates.length > 1 ? dates[1] : ''
-                }
+                data: entries
             };
         } else {
             return {

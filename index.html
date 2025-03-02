@@ -218,7 +218,8 @@
                 return;
             }
             
-            // Verify PDF.js is available
+            // Verify PDF.js is available - but don't set up listeners again
+            // as they're already set up in the first DOMContentLoaded event
             if (typeof window.pdfjsLib === 'undefined') {
                 console.error('PDF.js library not loaded correctly');
                 uploadStatus.innerHTML = 'Error: La biblioteca PDF.js no se cargó correctamente. <button id="retryButton" class="retry-button">Intentar cargar de nuevo</button>';
@@ -232,7 +233,8 @@
                 }, 100);
             } else {
                 console.log('PDF.js library loaded successfully');
-                setupFileInputListener();
+                // Don't call setupFileInputListener() again here
+                // It's already called in the first DOMContentLoaded event
             }
         });
     </script>
