@@ -387,6 +387,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     <p><strong>Salida:</strong> ${registro.fechaSalida ? `${formatDateToDisplay(registro.fechaSalida)} a las ${registro.horaSalida || ''}` : 'N/A'}</p>
                     ${registro.fechaEntrada && registro.fechaSalida ? `<p><strong>Duración Total:</strong> ${Math.ceil((new Date(registro.fechaSalida) - new Date(registro.fechaEntrada)) / (1000 * 60 * 60 * 24) + 1)} días</p>` : ''}
                     <p><strong>Horas de Limpieza Total:</strong> ${registro.horasLimpiadora}</p>
+                    <p><strong>Número de Adultos:</strong> ${registro.adultos || 0}</p>
+                    <p><strong>Número de Niños:</strong> ${registro.ninos || 0}${registro.edadesNinos ? ` (Edades: ${registro.edadesNinos})` : ''}</p>
                     <p><strong>Número de Huéspedes:</strong> ${registro.numHuespedes || 'No especificado'}</p>
                     ${trabajadorasHTML}
                     <p><strong>Extras:</strong> ${registro.extras.join(", ")}</p>
@@ -1835,6 +1837,29 @@ document.addEventListener('DOMContentLoaded', function () {
     huespedesDiv.appendChild(huespedesInput);
     form.appendChild(huespedesDiv);
     
+    // Campo para el número de adultos
+    const adultosDiv = document.createElement('div');
+    adultosDiv.style.marginBottom = '15px';
+    
+    const adultosLabel = document.createElement('label');
+    adultosLabel.textContent = 'Número de Adultos:';
+    adultosLabel.style.display = 'block';
+    adultosLabel.style.marginBottom = '5px';
+    
+    const adultosInput = document.createElement('input');
+    adultosInput.type = 'number';
+    adultosInput.name = 'adultos';
+    adultosInput.value = registro.adultos || '';
+    adultosInput.min = '0';
+    adultosInput.style.width = '100%';
+    adultosInput.style.padding = '8px';
+    adultosInput.style.border = '1px solid #ddd';
+    adultosInput.style.borderRadius = '4px';
+    
+    adultosDiv.appendChild(adultosLabel);
+    adultosDiv.appendChild(adultosInput);
+    form.appendChild(adultosDiv);
+    
     // Botones de acción
     const botonesDiv = document.createElement('div');
     botonesDiv.style.display = 'flex';
@@ -1884,11 +1909,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Evento para guardar los cambios
     guardarBtn.addEventListener('click', function() {
-        // Obtener el valor del número de huéspedes
+        // Obtener el valor del número de huéspedes y adultos
         const numHuespedes = huespedesInput.value;
+        const adultos = adultosInput.value;
         
-        // Actualizar el registro con el nuevo valor
+        // Actualizar el registro con los nuevos valores
         registro.numHuespedes = numHuespedes;
+        registro.adultos = adultos;
         
         // Actualizar el registro en localStorage
         actualizarRegistro(registro);

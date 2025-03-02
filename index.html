@@ -198,6 +198,65 @@
                                     acceptButton.onclick = function() {
                                         location.reload();
                                     };
+                                    
+                                    // Display raw numbers if in raw mode
+                                    if (result.rawMode && result.rawNumbers && result.rawNumbers.length > 0) {
+                                        let numbersHtml = '<div class="raw-numbers-container"><h3>Números encontrados en el PDF:</h3><ul class="raw-numbers-list">';
+                                        
+                                        result.rawNumbers.forEach(num => {
+                                            numbersHtml += `<li>
+                                                <input type="checkbox" id="num-${num.index}" name="raw-number" value="${num.value}">
+                                                <label for="num-${num.index}">Índice ${num.index}: <strong>${num.value}</strong> - Contexto: "${num.context}"</label>
+                                            </li>`;
+                                        });
+                                        
+                                        numbersHtml += '</ul><button id="useSelectedNumbers" class="btn">Usar números seleccionados</button></div>';
+                                        
+                                        // Add the raw numbers to the upload status
+                                        uploadStatus.innerHTML += numbersHtml;
+                                        
+                                        // Add event listener for the button
+                                        document.getElementById('useSelectedNumbers').addEventListener('click', function() {
+                                            const selectedNumbers = Array.from(document.querySelectorAll('input[name="raw-number"]:checked')).map(el => parseInt(el.value));
+                                            console.log('Selected numbers:', selectedNumbers);
+                                            
+                                            if (selectedNumbers.length > 0) {
+                                                // Create entries with the selected numbers as adult counts
+                                                const entries = [];
+                                                
+                                                // Get existing dates from the PDF processing result
+                                                const dates = window.lastPdfDates || [];
+                                                
+                                                // Create entries with the selected numbers as adult counts
+                                                if (dates.length >= 2) {
+                                                    for (let i = 0; i < Math.floor(dates.length/2); i++) {
+                                                        const adultCount = selectedNumbers[i % selectedNumbers.length] || 2; // Default to 2 if not enough numbers
+                                                        entries.push({
+                                                            vivienda: window.lastPropertyName || 'Vivienda',
+                                                            fechaEntrada: dates[i*2],
+                                                            fechaSalida: dates[i*2+1] || '',
+                                                            adultos: adultCount,
+                                                            numHuespedes: adultCount
+                                                        });
+                                                    }
+                                                    
+                                                    // Register the entries
+                                                    try {
+                                                        const newEntriesCount = registerProperty(entries);
+                                                        alert(`Se han registrado ${newEntriesCount} entradas con los números de adultos seleccionados.`);
+                                                        location.reload();
+                                                    } catch (error) {
+                                                        console.error('Error registering entries:', error);
+                                                        alert('Error al registrar las entradas: ' + error.message);
+                                                    }
+                                                } else {
+                                                    alert('No hay suficientes fechas para crear entradas. Se necesitan al menos dos fechas.');
+                                                }
+                                            } else {
+                                                alert('Por favor, seleccione al menos un número.');
+                                            }
+                                        });
+                                    }
                                 }
                             })
                         } else {

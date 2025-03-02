@@ -171,8 +171,53 @@ window.handlePDFUpload = async function(file) {
         const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
         console.log(`PDF loaded successfully with ${pdf.numPages} pages`);
         
+        // Extract all text from PDF first
+        let allText = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(' ');
+            allText += pageText + '\n';
+        }
+
+        // Extract all numbers with context
+        const allNumbers = extractAllNumbers(allText);
+        console.log('All numbers found in PDF:', allNumbers);
+
         const result = await extractPropertyData(pdf);
         console.log('PDF data extraction result:', result);
+
+        // Add raw numbers data to the result
+        result.rawNumbers = allNumbers;
+        
+        // Store dates and property name for raw mode processing
+        if (result && result.data) {
+            // Extract dates from the result
+            const dates = [];
+            if (Array.isArray(result.data)) {
+                result.data.forEach(entry => {
+                    if (entry.fechaEntrada) dates.push(entry.fechaEntrada);
+                    if (entry.fechaSalida) dates.push(entry.fechaSalida);
+                });
+            }
+            window.lastPdfDates = dates;
+            
+            // Extract property name
+            if (Array.isArray(result.data) && result.data.length > 0 && result.data[0].vivienda) {
+                window.lastPropertyName = result.data[0].vivienda;
+            }
+        }
+        
+        // If we have raw numbers but no success in normal extraction, still return success
+        // so the user can see the raw numbers and select which ones to use
+        if (!result.success && allNumbers.length > 0) {
+            return {
+                success: true,
+                message: `Se han encontrado ${allNumbers.length} números en el PDF. Seleccione cuáles corresponden a adultos.`,
+                rawNumbers: allNumbers,
+                rawMode: true
+            };
+        }
         
         if (result && result.success) {
             // Ensure result.data is always an array
@@ -212,14 +257,14 @@ window.handlePDFUpload = async function(file) {
             } else {
                 return {
                     success: false,
-                    message: 'No se encontraron fechas válidas en el PDF. Por favor, asegúrese de que el PDF contiene fechas en formato DD/MM/YYYY o DD-MM-YYYY.'
+                    message: 'No se encontraron fechas válidas en el PDF. Por favor, asegúrese de que el PDF contiene fechas en formato DD/MM/YYYY o DD-MM/YYYY.'
                 };
             }
         } else {
             console.warn('No valid entries found in PDF');
             return { 
                 success: false, 
-                message: 'No se pudieron extraer fechas del PDF. Por favor, verifica que el PDF contenga fechas de entrada o salida en formato DD/MM/YYYY o DD-MM-YYYY.'
+                message: 'No se pudieron extraer fechas del PDF. Por favor, verifica que el PDF contenga fechas de entrada o salida en formato DD/MM/YYYY o DD-MM/YYYY.'
             };
         }
     } catch (error) {
@@ -338,6 +383,25 @@ function registerProperty(dataArray) {
     }
 }
 
+// Function to extract all numbers with their positions from PDF text
+function extractAllNumbers(text) {
+    const numbers = [];
+    const numberRegex = /\b\d+\b/g;
+    let match;
+    let index = 0;
+    
+    while ((match = numberRegex.exec(text)) !== null) {
+        numbers.push({
+            index: index++,
+            value: parseInt(match[0]),
+            position: match.index,
+            context: text.substring(Math.max(0, match.index - 20), match.index + match[0].length + 20)
+        });
+    }
+    
+    return numbers;
+}
+
 // Function to extract property data from PDF
 async function extractPropertyData(pdf) {
     try {
@@ -414,6 +478,88 @@ function parsePropertyTextMultiple(text) {
                 }
             }
         }
+
+        // Find number of adults using the improved pattern matching
+        const adultNumbers = [];
+        const childNumbers = []; // Array to store child counts
+        const childAges = []; // Array to store child ages
+        // Look for numbers that appear after date patterns in a specific sequence
+        const dateNumberPattern = /\d{2}\/\d{2}\/\d{4}\s+\d{2}\/\d{2}\/\d{4}\s+\d+\s+(\d+)(?:\s+(\d+)(?:\s+([\d\s,y]+))?)?\b/g;
+        let dateNumberMatch;
+        
+        while ((dateNumberMatch = dateNumberPattern.exec(text)) !== null) {
+            const adultNumber = parseInt(dateNumberMatch[1]);
+            // Validate the number is reasonable for adults (typically 1-8)
+            if (adultNumber > 0 && adultNumber <= 8) {
+                adultNumbers.push(adultNumber);
+                // Check if there's a child number after the adult number
+                const childNumber = dateNumberMatch[2] ? parseInt(dateNumberMatch[2]) : 0;
+                childNumbers.push(childNumber);
+                
+                // Extract and process child ages if present
+                let ageString = dateNumberMatch[3] || '';
+                // Process age string to handle patterns like "5 y 13" or "5, 13"
+                if (ageString) {
+                    // First, normalize the string by replacing 'y' with commas
+                    ageString = ageString.replace(/\s+y\s+/g, ',');
+                    // Then extract all numbers
+                    const ageMatches = ageString.match(/\d+/g) || [];
+                    ageString = ageMatches.join(', ');
+                }
+                childAges.push(ageString);
+            }
+        }
+        
+        // If no matches found with date pattern, try looking for numbers after nights
+        if (adultNumbers.length === 0) {
+            const nightsAdultPattern = /\b\d+\s+(\d)(?:\s+(\d+)(?:\s+([\d,y]+))?)?\s+(?:Pendiente|Entre|\+|[A-Z])/g;
+            let nightsAdultMatch;
+            while ((nightsAdultMatch = nightsAdultPattern.exec(text)) !== null) {
+                const adultNumber = parseInt(nightsAdultMatch[1]);
+                if (adultNumber > 0 && adultNumber <= 8) {
+                    adultNumbers.push(adultNumber);
+                    // Check if there's a child number after the adult number
+                    const childNumber = nightsAdultMatch[2] ? parseInt(nightsAdultMatch[2]) : 0;
+                    childNumbers.push(childNumber);
+                    // Extract child ages if present
+                    const ageString = nightsAdultMatch[3] || '';
+                    childAges.push(ageString);
+                }
+            }
+        }
+        
+        // If still no matches, try the original ADULTOS section method
+        if (adultNumbers.length === 0) {
+            const adultRegex = /ADULTOS[\s\S]*?(?=NIÑOS|$)/i;
+            const adultSection = text.match(adultRegex);
+            if (adultSection) {
+                const numberRegex = /\b\d+\b/g;
+                let adultMatch;
+                while ((adultMatch = numberRegex.exec(adultSection[0])) !== null) {
+                    const adultNumber = parseInt(adultMatch[0]);
+                    if (adultNumber > 0 && adultNumber <= 8) {
+                        adultNumbers.push(adultNumber);
+                        childNumbers.push(0); // Default to 0 children for this method
+                    }
+                }
+            }
+            
+            // Try to find NIÑOS section separately
+            const childRegex = /NIÑOS[\s\S]*?(?=ADULTOS|$)/i;
+            const childSection = text.match(childRegex);
+            if (childSection && adultNumbers.length > 0) {
+                const numberRegex = /\b\d+\b/g;
+                let childMatch;
+                let childIndex = 0;
+                while ((childMatch = numberRegex.exec(childSection[0])) !== null && childIndex < adultNumbers.length) {
+                    const childNumber = parseInt(childMatch[0]);
+                    if (childNumber >= 0 && childNumber <= 8) {
+                        childNumbers[childIndex] = childNumber;
+                        childIndex++;
+                    }
+                }
+            }
+        }
         
         // Find all property names
         const properties = [];
@@ -428,20 +574,31 @@ function parsePropertyTextMultiple(text) {
             for (let i = 0; i < dates.length - 1; i += 2) {
                 // Try to find a property name near these dates
                 const propertyName = properties.length > 0 ? properties[Math.floor(i/2) % properties.length] : 'Vivienda';
+                const entryIndex = Math.floor(i/2);
                 
                 entries.push({
                     vivienda: propertyName,
                     fechaEntrada: dates[i],
-                    fechaSalida: dates[i + 1] || ''
+                    fechaSalida: dates[i + 1] || '',
+                    adultos: adultNumbers[entryIndex] || 0, // Use the extracted adult numbers
+                    ninos: childNumbers[entryIndex] || 0, // Add the child count
+                    edadesNinos: childAges[entryIndex] || '', // Add the child ages
+                    numHuespedes: (adultNumbers[entryIndex] || 0) + (childNumbers[entryIndex] || 0) // Total guests
                 });
             }
             // Handle odd number of dates
             if (dates.length % 2 !== 0) {
                 const propertyName = properties.length > 0 ? properties[Math.floor((dates.length-1)/2) % properties.length] : 'Vivienda';
+                const entryIndex = Math.floor((dates.length-1)/2);
+                
                 entries.push({
                     vivienda: propertyName,
                     fechaEntrada: dates[dates.length - 1],
-                    fechaSalida: ''
+                    fechaSalida: '',
+                    adultos: adultNumbers[entryIndex] || 0, // Use the extracted adult numbers
+                    ninos: childNumbers[entryIndex] || 0, // Add the child count
+                    edadesNinos: childAges[entryIndex] || '', // Add the child ages
+                    numHuespedes: (adultNumbers[entryIndex] || 0) + (childNumbers[entryIndex] || 0) // Total guests
                 });
             }
             
