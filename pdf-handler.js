@@ -52,8 +52,10 @@ window.handlePDFUpload = async function(file) {
             console.warn('Running on GitHub Pages - some features may be limited');
         }
         
-        // Verify PDF.js is available
-        if (typeof pdfjsLib === 'undefined') {
+        // Ensure PDF.js is loaded before proceeding
+        try {
+            await ensurePDFJSLoaded();
+        } catch (loadError) {
             throw new Error('PDF.js library not loaded correctly. Please refresh the page and try again.');
         }
         

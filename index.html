@@ -7,23 +7,109 @@
     <link rel="stylesheet" href="normalize.css">
     <link rel="stylesheet" href="vivienda.css">
     <link rel="stylesheet" href="night-mode.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha512-AfXlbTWxWN4oL0YmxBdRlOu2wHZGxg+m3bv9B6NzgB0LIeQgTI2f+qUfZ8Bw0xHdA0d/rHu7/CcyNLF7qTu9A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
-        // Initialize PDF.js with proper error handling
-        document.addEventListener('DOMContentLoaded', function() {
-            try {
-                window.pdfjsLib = window['pdfjs-dist/build/pdf'];
-                if (!window.pdfjsLib) {
-                    throw new Error('PDF.js library not loaded correctly');
+        // Function to load PDF.js and its worker with improved error handling
+        function loadPDFJS() {
+            return new Promise((resolve, reject) => {
+                // Check if PDF.js is already loaded
+                if (window.pdfjsLib) {
+                    console.log('PDF.js is already loaded');
+                    resolve();
+                    return;
                 }
-                window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                script.integrity = 'sha512-AfXlbTWxWN4oL0YmxBdRlOu2wHZGxg+m3bv9B6NzgB0LIeQgTI2f+qUfZ8Bw0xHdA0d/rHu7/CcyNLF7qTu9A==';
+                script.crossOrigin = 'anonymous';
+                script.referrerPolicy = 'no-referrer';
+                script.async = true;
+
+                let workerScriptLoaded = false;
+                let mainScriptLoaded = false;
+
+                // Load worker script in parallel
+                const workerScript = document.createElement('script');
+                workerScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                workerScript.crossOrigin = 'anonymous';
+                workerScript.async = true;
+
+                workerScript.onload = () => {
+                    console.log('PDF.js worker script loaded');
+                    workerScriptLoaded = true;
+                    if (mainScriptLoaded) {
+                        initializePDFJS();
+                    }
+                };
+
+                workerScript.onerror = () => {
+                    reject(new Error('Failed to load PDF.js worker script'));
+                };
+
+                script.onload = () => {
+                    console.log('PDF.js main script loaded');
+                    mainScriptLoaded = true;
+                    if (workerScriptLoaded) {
+                        initializePDFJS();
+                    }
+                };
+
+                script.onerror = () => {
+                    reject(new Error('Failed to load PDF.js main script'));
+                };
+
+                function initializePDFJS() {
+                    try {
+                        if (typeof window['pdfjs-dist/build/pdf'] === 'undefined') {
+                            throw new Error('PDF.js library not found in global scope');
+                        }
+                        window.pdfjsLib = window['pdfjs-dist/build/pdf'];
+                        window.pdfjsLib.GlobalWorkerOptions.workerSrc = workerScript.src;
+                        console.log('PDF.js initialized with worker');
+                        resolve();
+                    } catch (error) {
+                        console.error('PDF.js initialization error:', error);
+                        reject(error);
+                    }
+                }
+
+                document.head.appendChild(script);
+                document.head.appendChild(workerScript);
+            });
+        }
+
+        // Initialize PDF.js when the document is ready
+        document.addEventListener('DOMContentLoaded', async function() {
+            const uploadStatus = document.getElementById('uploadStatus');
+            try {
+                await loadPDFJS();
                 console.log('PDF.js initialized successfully');
+                uploadStatus.innerHTML = 'PDF.js cargado correctamente. Listo para procesar archivos PDF.';
+                uploadStatus.style.color = '#28a745';
             } catch (error) {
                 console.error('Error initializing PDF.js:', error);
-                document.getElementById('uploadStatus').innerHTML = 'Error: La biblioteca PDF.js no se cargó correctamente. Intente recargar la página o use la aplicación localmente.';
-                document.getElementById('uploadStatus').style.color = '#dc3545';
+                uploadStatus.innerHTML = 'Error: La biblioteca PDF.js no se cargó correctamente. <button onclick="retryInitialization()" class="retry-button">Intentar de nuevo</button>';
+                uploadStatus.style.color = '#dc3545';
             }
         });
+
+        // Function to retry initialization
+        async function retryInitialization() {
+            const uploadStatus = document.getElementById('uploadStatus');
+            uploadStatus.innerHTML = 'Intentando cargar PDF.js...';
+            uploadStatus.style.color = '#0275d8';
+
+            try {
+                await loadPDFJS();
+                console.log('PDF.js initialized successfully on retry');
+                uploadStatus.innerHTML = 'PDF.js cargado correctamente. Listo para procesar archivos PDF.';
+                uploadStatus.style.color = '#28a745';
+            } catch (error) {
+                console.error('Error on PDF.js retry:', error);
+                uploadStatus.innerHTML = 'Error al cargar PDF.js. <button onclick="retryInitialization()" class="retry-button">Intentar de nuevo</button>';
+                uploadStatus.style.color = '#dc3545';
+            }
+        }
     </script>
 </head>
 <body>
@@ -156,38 +242,29 @@
                 uploadStatus.style.color = '#ff9800';
             }
             
-            // Function to retry loading PDF.js
+            // Function to retry loading PDF.js - using the improved loading mechanism
             function retryLoadPdfJs() {
-                const script = document.createElement('script');
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-                script.onload = function() {
-                    try {
-                        window.pdfjsLib = window['pdfjs-dist/build/pdf'];
-                        if (window.pdfjsLib) {
-                            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-                            console.log('PDF.js library loaded successfully on retry');
-                            uploadStatus.innerHTML = 'PDF.js cargado correctamente. Ahora puede subir archivos PDF.';
-                            uploadStatus.style.color = '#28a745';
-                            setupFileInputListener();
-                        } else {
-                            throw new Error('PDF.js library still not available');
-                        }
-                    } catch (error) {
-                        console.error('Error on PDF.js retry:', error);
-                        uploadStatus.innerHTML = 'Error al cargar PDF.js. <button id="retryButton" class="retry-button">Intentar de nuevo</button>';
-                        uploadStatus.style.color = '#dc3545';
-                        document.getElementById('retryButton').addEventListener('click', retryLoadPdfJs);
-                    }
-                };
-                script.onerror = function() {
-                    console.error('Failed to load PDF.js script');
-                    uploadStatus.innerHTML = 'Error al cargar la biblioteca PDF.js. <button id="retryButton" class="retry-button">Intentar de nuevo</button>';
-                    uploadStatus.style.color = '#dc3545';
-                    document.getElementById('retryButton').addEventListener('click', retryLoadPdfJs);
-                };
-                document.head.appendChild(script);
                 uploadStatus.innerHTML = 'Intentando cargar PDF.js...';
                 uploadStatus.style.color = '#0275d8';
+                
+                // Use the improved loadPDFJS function from above
+                loadPDFJS().then(() => {
+                    console.log('PDF.js library loaded successfully on retry');
+                    uploadStatus.innerHTML = 'PDF.js cargado correctamente. Ahora puede subir archivos PDF.';
+                    uploadStatus.style.color = '#28a745';
+                    setupFileInputListener();
+                }).catch((error) => {
+                    console.error('Error on PDF.js retry:', error);
+                    uploadStatus.innerHTML = 'Error al cargar PDF.js. <button id="retryButton" class="retry-button">Intentar de nuevo</button>';
+                    uploadStatus.style.color = '#dc3545';
+                    // Use setTimeout to ensure the button exists in the DOM before adding the event listener
+                    setTimeout(() => {
+                        const retryButton = document.getElementById('retryButton');
+                        if (retryButton) {
+                            retryButton.addEventListener('click', retryLoadPdfJs);
+                        }
+                    }, 100);
+                });
             }
             
             // Setup file input listener
@@ -220,11 +297,17 @@
             }
             
             // Verify PDF.js is available
-            if (typeof pdfjsLib === 'undefined') {
+            if (typeof window.pdfjsLib === 'undefined') {
                 console.error('PDF.js library not loaded correctly');
                 uploadStatus.innerHTML = 'Error: La biblioteca PDF.js no se cargó correctamente. <button id="retryButton" class="retry-button">Intentar cargar de nuevo</button>';
                 uploadStatus.style.color = '#dc3545';
-                document.getElementById('retryButton').addEventListener('click', retryLoadPdfJs);
+                // Use setTimeout to ensure the button exists in the DOM before adding the event listener
+                setTimeout(() => {
+                    const retryButton = document.getElementById('retryButton');
+                    if (retryButton) {
+                        retryButton.addEventListener('click', retryLoadPdfJs);
+                    }
+                }, 100);
             } else {
                 console.log('PDF.js library loaded successfully');
                 setupFileInputListener();
