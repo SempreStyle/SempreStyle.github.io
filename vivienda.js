@@ -1,4 +1,51 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // Configurar el manejador de archivos PDF
+    const pdfFileInput = document.getElementById('pdfFileInput');
+    const uploadStatus = document.getElementById('uploadStatus');
+    
+    if (pdfFileInput) {
+        pdfFileInput.addEventListener('change', async function(event) {
+            if (event.target.files.length > 0) {
+                const file = event.target.files[0];
+                uploadStatus.textContent = 'Procesando PDF...';
+                uploadStatus.style.color = '#666';
+                
+                try {
+                    // Ensure we're accessing the function from the window object
+                    const result = await window.handlePDFUpload(file);
+                    if (result.success) {
+                        uploadStatus.textContent = '¡PDF procesado con éxito! La vivienda ha sido registrada.';
+                        uploadStatus.style.color = '#28a745';
+                        // Actualizar la interfaz
+                        actualizarUI();
+                    } else {
+                        let errorMessage = result.message;
+                        if (result.missingFields) {
+                            const fieldNames = {
+                                propertyName: 'Nombre de la vivienda',
+                                checkIn: 'Fecha de entrada',
+                                checkOut: 'Fecha de salida'
+                            };
+                            const missingFieldsText = result.missingFields
+                                .map(field => fieldNames[field])
+                                .join(', ');
+                            errorMessage += `\nCampos faltantes: ${missingFieldsText}`;
+                        }
+                        uploadStatus.innerHTML = errorMessage.replace('\n', '<br>');
+                        uploadStatus.style.color = '#dc3545';
+                    }
+                } catch (error) {
+                    console.error('Error al procesar el PDF:', error);
+                    uploadStatus.textContent = 'Error al procesar el PDF: ' + error.message;
+                    uploadStatus.style.color = '#dc3545';
+                }
+                
+                // Limpiar el input para permitir subir el mismo archivo nuevamente
+                event.target.value = '';
+            }
+        });
+    }
+
     // Todas las funciones están definidas en este archivo
     const registroForm = document.getElementById('registroForm');
     const historialRegistros = document.getElementById('historialRegistros');

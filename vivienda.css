@@ -663,3 +663,264 @@ button:active {
     }
 }
 
+/* Estilos para la sección de carga de PDF */
+.pdf-upload-container {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.file-input-container {
+    margin: 15px 0;
+    display: flex;
+    justify-content: center;
+}
+
+.file-input {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.file-input-label {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+    transition: background-color 0.3s;
+}
+
+.file-input-label:hover {
+    background-color: var(--primary-color-dark);
+}
+
+.upload-status {
+    margin-top: 10px;
+    text-align: center;
+    font-weight: bold;
+}
+
+#historialRegistros .registro:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Estilos para el botón de completado */
+.completadoBtn {
+    background-color: #edf2f7;
+    color: #2d3748;
+    transition: all 0.3s ease;
+}
+
+.completadoBtn.completado {
+    background-color: #38a169;
+    color: white;
+}
+
+/* Estilo para destacar temporalmente un registro */
+.destacado {
+    animation: highlight 3s;
+}
+
+@keyframes highlight {
+    0% { background-color: #fefcbf; }
+    100% { background-color: inherit; }
+}
+
+#historialRegistros .registro p {
+    margin: 10px 0;
+    line-height: 1.6;
+    color: #2d3748;
+}
+
+/* Estilos para los botones de expandir y contraer */
+.registro .expandirBtn,
+.registro .contraerBtn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: #3182ce;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background-color 0.3s;
+    font-size: 0.9rem;
+}
+
+.registro .contraerBtn {
+    background-color: #2d3748;
+}
+
+.registro .expandirBtn:hover,
+.registro .contraerBtn:hover {
+    background-color: #2b6cb0;
+}
+
+/* Botón de descarga CSV */
+#btnDescargarCSV, #btnDescargarCSVPerlas {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    padding: 15px 30px;
+    text-align: center;
+    display: block;
+    border-radius: 8px;
+    margin: 30px auto;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 6px rgba(49, 130, 206, 0.3);
+    max-width: 250px;
+}
+
+#btnDescargarCSV:hover, #btnDescargarCSVPerlas:hover {
+    background-color: var(--button-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(49, 130, 206, 0.2);
+}
+
+#btnDescargarCSV:active, #btnDescargarCSVPerlas:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(49, 130, 206, 0.2);
+}
+
+/* Estilos para el botón de volver al piso */
+.volverBtn {
+    background-color: #3182ce;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.volverBtn:hover {
+    background-color: #2b6cb0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Estilos para botones de acción en registros */
+.borrarBtn, .editarTrabajadorasBtn, .editarExtrasBtn, .anotacionesBtn, .editarEntradaBtn, .editarSalidaBtn {
+    padding: 8px 12px;
+    margin-right: 8px;
+    margin-top: 10px;
+    font-size: 0.85rem;
+}
+
+/* Diseño responsivo */
+@media screen and (max-width: 768px) {
+    /* Estilos para los modales de edición en dispositivos móviles */
+    /* Estilos generales para todos los formularios de edición */
+    .form-editar-extras,
+    .form-editar-trabajadoras,
+    .form-editar-anotaciones {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 10px !important;
+        box-sizing: border-box !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    
+    /* Ajustes para el grid de extras */
+    .form-editar-extras div[style*="grid"] {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+    }
+    
+    /* Ajustes para los inputs y labels */
+    .form-editar-trabajadoras div {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .form-editar-trabajadoras label {
+        margin-bottom: 10px !important;
+        width: 100% !important;
+    }
+    
+    .form-editar-trabajadoras input[type="number"] {
+        width: 100% !important;
+        margin-top: 5px !important;
+        padding: 8px !important;
+        font-size: 16px !important; /* Larger font size for better touch targets */
+    }
+    
+    /* Ajustes para los botones */
+    .form-editar-extras div[style*="flex"],
+    .form-editar-trabajadoras div[style*="flex"],
+    .form-editar-anotaciones div[style*="flex"] {
+        flex-direction: row !important;
+        width: 100% !important;
+    }
+    
+    .form-editar-extras button,
+    .form-editar-trabajadoras button,
+    .form-editar-anotaciones button {
+        flex: 1 !important;
+        margin: 0 5px !important;
+        padding: 12px 5px !important;
+        font-size: 14px !important;
+    }
+    
+    .nav-container {
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px 0;
+    }
+    
+    .nav-link {
+        width: 80%;
+        text-align: center;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    form {
+        grid-template-columns: 1fr;
+        padding: 25px;
+    }
+    
+    .registro .expandirBtn,
+    .registro .contraerBtn {
+        position: static;
+        margin-top: 15px;
+        width: 100%;
+    }
+    
+    #historialRegistros .registro {
+        padding: 20px 15px;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    .container {
+        padding: 60px 5%;
+    }
+    
+    section > * {
+        padding: 40px;
+    }
+}
+

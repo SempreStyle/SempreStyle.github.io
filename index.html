@@ -96,6 +96,18 @@
             </form>
         </section>
 
+        <section id="pdf-upload" class="section-indicator">
+            <h2>Subir PDF de Vivienda</h2>
+            <div class="pdf-upload-container">
+                <p>Sube un archivo PDF con la información de la vivienda para registrarla automáticamente.</p>
+                <div class="file-input-container">
+                    <input type="file" id="pdfFileInput" accept=".pdf" class="file-input">
+                    <label for="pdfFileInput" class="file-input-label">Seleccionar archivo PDF</label>
+                </div>
+                <div id="uploadStatus" class="upload-status"></div>
+            </div>
+        </section>
+
         <section id="historial" class="section-indicator">
             <h2>Historial de Registros</h2>
             <div id="historialRegistros" class="historial-lista"></div>
@@ -108,6 +120,8 @@
     </div>
 
     <!-- El código de JavaScript deberá vincularse aquí -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="pdf-handler.js"></script>
     <script src="trabajadoras.js"></script>
     <script src="vivienda.js"></script>
 </body>
