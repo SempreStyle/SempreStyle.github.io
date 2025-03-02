@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (registro.completado) {
                     botonEntrada.classList.add('propiedad-completada');
                 }
-                botonEntrada.innerHTML = `<span class="vivienda-nombre">${registro.vivienda}</span><span class="vivienda-detalle">Entrada: ${registro.fechaEntrada} ${registro.horaEntrada}</span>`;
+                botonEntrada.innerHTML = `<span class="vivienda-nombre">${registro.vivienda}</span><span class="vivienda-detalle">Entrada: ${formatDateToDisplay(registro.fechaEntrada)} ${registro.horaEntrada}</span>`;
                 botonEntrada.addEventListener('click', () => mostrarDetallesPropiedad(registro));
                 viviendasHoy.appendChild(botonEntrada);
             } else if (salidaDate.toDateString() === hoy.toDateString()) {
@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (registro.completado) {
                     botonSalida.classList.add('propiedad-completada');
                 }
-                botonSalida.innerHTML = `<span class="vivienda-nombre">${registro.vivienda}</span><span class="vivienda-detalle">Salida: ${registro.fechaSalida} ${registro.horaSalida}</span>`;
+                botonSalida.innerHTML = `<span class="vivienda-nombre">${registro.vivienda}</span><span class="vivienda-detalle">Salida: ${formatDateToDisplay(registro.fechaSalida)} ${registro.horaSalida}</span>`;
                 botonSalida.addEventListener('click', () => mostrarDetallesPropiedad(registro));
                 viviendasHoy.appendChild(botonSalida);
             }
@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (registro.completado) {
                     botonEntrada.classList.add('propiedad-completada');
                 }
-                botonEntrada.innerHTML = `<span class="vivienda-nombre">${registro.vivienda}</span><span class="vivienda-detalle">Entrada: ${registro.fechaEntrada} ${registro.horaEntrada}</span>`;
+                botonEntrada.innerHTML = `<span class="vivienda-nombre">${registro.vivienda}</span><span class="vivienda-detalle">Entrada: ${formatDateToDisplay(registro.fechaEntrada)} ${registro.horaEntrada}</span>`;
                 botonEntrada.addEventListener('click', () => mostrarDetallesPropiedad(registro));
                 viviendasManana.appendChild(botonEntrada);
             } else if (salidaDate.toDateString() === manana.toDateString()) {
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (registro.completado) {
                     botonSalida.classList.add('propiedad-completada');
                 }
-                botonSalida.innerHTML = `<span class="vivienda-nombre">${registro.vivienda}</span><span class="vivienda-detalle">Salida: ${registro.fechaSalida} ${registro.horaSalida}</span>`;
+                botonSalida.innerHTML = `<span class="vivienda-nombre">${registro.vivienda}</span><span class="vivienda-detalle">Salida: ${formatDateToDisplay(registro.fechaSalida)} ${registro.horaSalida}</span>`;
                 botonSalida.addEventListener('click', () => mostrarDetallesPropiedad(registro));
                 viviendasManana.appendChild(botonSalida);
             }
@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (registro.completado) {
                     botonEntrada.classList.add('propiedad-completada');
                 }
-                botonEntrada.innerHTML = `<span class="vivienda-nombre">${registro.vivienda}</span><span class="vivienda-detalle">Entrada: ${registro.fechaEntrada} ${registro.horaEntrada}</span>`;
+                botonEntrada.innerHTML = `<span class="vivienda-nombre">${registro.vivienda}</span><span class="vivienda-detalle">Entrada: ${formatDateToDisplay(registro.fechaEntrada)} ${registro.horaEntrada}</span>`;
                 botonEntrada.addEventListener('click', () => mostrarDetallesPropiedad(registro));
                 viviendasPasadoManana.appendChild(botonEntrada);
             } else if (salidaDate.toDateString() === pasadoManana.toDateString()) {
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (registro.completado) {
                     botonSalida.classList.add('propiedad-completada');
                 }
-                botonSalida.innerHTML = `<span class="vivienda-nombre">${registro.vivienda}</span><span class="vivienda-detalle">Salida: ${registro.fechaSalida} ${registro.horaSalida}</span>`;
+                botonSalida.innerHTML = `<span class="vivienda-nombre">${registro.vivienda}</span><span class="vivienda-detalle">Salida: ${formatDateToDisplay(registro.fechaSalida)} ${registro.horaSalida}</span>`;
                 botonSalida.addEventListener('click', () => mostrarDetallesPropiedad(registro));
                 viviendasPasadoManana.appendChild(botonSalida);
             }
@@ -308,8 +308,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         
         historialRegistros.innerHTML = '';
-        const registrosAgrupados = agruparRegistrosPorFecha(registros);
+        // Ordenar registros por fecha antes de agruparlos
+        const registrosOrdenados = [...registros].sort((a, b) => {
+            const fechaA = new Date(a.fechaEntrada || a.fechaSalida);
+            const fechaB = new Date(b.fechaEntrada || b.fechaSalida);
+            return fechaA - fechaB;
+        });
+        const registrosAgrupados = agruparRegistrosPorFecha(registrosOrdenados);
 
+        // Ordenar los grupos por fecha de manera ascendente
         // Ordenar los grupos por fecha de manera ascendente
         const gruposOrdenados = Array.from(registrosAgrupados.entries()).sort((a, b) => {
             const fechaA = new Date(a[0]);
@@ -2876,55 +2883,99 @@ function actualizarVistaRegistro(div, registro) {
             }
         }
         
-        // Buscar el registro correspondiente en el historial
-        const registroEnHistorial = document.querySelectorAll('#historialRegistros .registro');
-        let encontrado = false;
+        // Ir a la sección de historial
+        document.querySelector('a[href="#historial"]').click();
         
-        registroEnHistorial.forEach(elem => {
-            // Buscar los elementos necesarios dentro del registro
-            const vivViendaElem = elem.querySelector('h3');
-            const vivEntradaElem = elem.querySelector('p:nth-child(2)');
-            const vivSalidaElem = elem.querySelector('p:nth-child(3)');
+        // Esperar a que la navegación se complete antes de buscar y expandir
+        setTimeout(() => {
+            // Primero, intentar encontrar y expandir el grupo de fecha correcto
+            const fechaEntrada = registro.fechaEntrada ? formatDateToDisplay(registro.fechaEntrada) : null;
+            const fechaSalida = registro.fechaSalida ? formatDateToDisplay(registro.fechaSalida) : null;
             
-            // Verificar que todos los elementos necesarios existen
-            if (!vivViendaElem || !vivEntradaElem || !vivSalidaElem) return;
+            // Obtener todos los grupos de fecha en el historial
+            const gruposFecha = document.querySelectorAll('#historialRegistros .grupo');
+            let grupoEncontrado = false;
             
-            const vivVienda = vivViendaElem.textContent;
-            const vivEntrada = vivEntradaElem.textContent;
-            const vivSalida = vivSalidaElem.textContent;
+            // Primero intentar expandir el grupo correcto
+            gruposFecha.forEach(grupo => {
+                const tituloFecha = grupo.querySelector('.fecha-titulo');
+                if (!tituloFecha) return;
+                
+                const textoFecha = tituloFecha.textContent.replace(' ▼', '').replace(' ▲', '').replace(/\s*\(\d+\s*apartamentos?\)\s*/, '');
+                
+                // Verificar si esta fecha corresponde a la entrada o salida del registro
+                if ((fechaEntrada && textoFecha.includes(fechaEntrada)) || 
+                    (fechaSalida && textoFecha.includes(fechaSalida))) {
+                    
+                    // Expandir este grupo si está colapsado
+                    const contenido = grupo.querySelector('.contenido');
+                    const indicador = grupo.querySelector('.indicador-expansion');
+                    
+                    if (contenido && indicador && contenido.style.display === 'none') {
+                        contenido.style.display = 'block';
+                        indicador.textContent = ' ▲';
+                        grupoEncontrado = true;
+                    }
+                }
+            });
             
-            // Verificar si este elemento coincide con el registro
-            if (vivVienda.includes(registro.vivienda) && 
-                ((registro.fechaEntrada && vivEntrada.includes(registro.fechaEntrada)) || 
-                 (registro.fechaSalida && vivSalida.includes(registro.fechaSalida)))) {
+            // Ahora buscar el registro específico dentro de los grupos expandidos
+            const registroEnHistorial = document.querySelectorAll('#historialRegistros .registro');
+            let encontrado = false;
+            
+            registroEnHistorial.forEach(elem => {
+                // Si ya encontramos el registro, no seguir buscando
+                if (encontrado) return;
                 
-                // Resaltar temporalmente el elemento encontrado
-                elem.classList.add('destacado');
-                setTimeout(() => {
-                    elem.classList.remove('destacado');
-                }, 3000);
+                // Buscar los elementos necesarios dentro del registro
+                const vivViendaElem = elem.querySelector('h3');
+                const vivEntradaElem = elem.querySelector('p:nth-child(2)');
+                const vivSalidaElem = elem.querySelector('p:nth-child(3)');
                 
-                // Desplazarse al elemento
-                elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Verificar que todos los elementos necesarios existen
+                if (!vivViendaElem || !vivEntradaElem || !vivSalidaElem) return;
                 
-                // Ir a la sección de historial
-                document.querySelector('a[href="#historial"]').click();
+                const vivVienda = vivViendaElem.textContent;
+                const vivEntrada = vivEntradaElem.textContent;
+                const vivSalida = vivSalidaElem.textContent;
                 
-                encontrado = true;
+                // Verificar si este elemento coincide con el registro
+                if (vivVienda.includes(registro.vivienda) && 
+                    ((registro.fechaEntrada && vivEntrada.includes(formatDateToDisplay(registro.fechaEntrada))) || 
+                     (registro.fechaSalida && vivSalida.includes(formatDateToDisplay(registro.fechaSalida))))) {
+                    
+                    // Expandir el grupo que contiene este registro (por si acaso no se expandió antes)
+                    const grupo = elem.closest('.grupo');
+                    if (grupo) {
+                        const contenido = grupo.querySelector('.contenido');
+                        const indicador = grupo.querySelector('.indicador-expansion');
+                        if (contenido && indicador) {
+                            contenido.style.display = 'block';
+                            indicador.textContent = ' ▲';
+                        }
+                    }
+                    
+                    // Resaltar temporalmente el elemento encontrado
+                    elem.classList.add('destacado');
+                    setTimeout(() => {
+                        elem.classList.remove('destacado');
+                    }, 3000);
+                    
+                    // Desplazarse al elemento
+                    elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    encontrado = true;
+                }
+            });
+            
+            // Si no se encuentra el registro específico pero sí encontramos y expandimos el grupo
+            if (!encontrado && grupoEncontrado) {
+                console.log('Grupo expandido pero registro específico no encontrado:', registro.vivienda);
             }
-        });
-        
-        if (!encontrado) {
-            // Si no se encuentra en el historial, mostrar alerta como antes
-            const detalles = `
-                Vivienda: ${registro.vivienda}
-                Entrada: ${registro.fechaEntrada ? `${registro.fechaEntrada} a las ${registro.horaEntrada || ''}` : 'N/A'}
-                Salida: ${registro.fechaSalida ? `${registro.fechaSalida} a las ${registro.horaSalida || ''}` : 'N/A'}
-                Horas de Limpieza: ${registro.horasLimpiadora}
-                Extras: ${registro.extras.join(', ')}
-            `;
-            alert(detalles);
-        }
+            // Si no se encuentra ni el registro ni el grupo
+            else if (!encontrado && !grupoEncontrado) {
+                console.log('Registro no encontrado en el historial:', registro.vivienda);
+            }
+        }, 300); // Pequeño retraso para asegurar que la navegación se complete
     }
 
     /**
