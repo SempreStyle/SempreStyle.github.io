@@ -1,11 +1,21 @@
 // PDF Handler for Vacation Rental Management System
 
-// Import PDF.js library
-const pdfjsLib = window['pdfjs-dist/build/pdf'];
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-pdfjsLib.GlobalWorkerOptions.disableAutoFetch = true;
-pdfjsLib.GlobalWorkerOptions.disableStream = true;
-pdfjsLib.GlobalWorkerOptions.verbosity = pdfjsLib.VerbosityLevel.ERRORS;
+// Initialize PDF.js library with error handling
+let pdfjsLib;
+try {
+    pdfjsLib = window['pdfjs-dist/build/pdf'];
+    if (pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        pdfjsLib.GlobalWorkerOptions.disableAutoFetch = true;
+        pdfjsLib.GlobalWorkerOptions.disableStream = true;
+        pdfjsLib.GlobalWorkerOptions.verbosity = pdfjsLib.VerbosityLevel.ERRORS;
+        console.log('PDF.js library initialized in pdf-handler.js');
+    } else {
+        console.error('PDF.js library not available in global scope');
+    }
+} catch (error) {
+    console.error('Error initializing PDF.js library:', error);
+}
 
 // Helper function to format dates consistently
 function formatDate(dateStr) {
